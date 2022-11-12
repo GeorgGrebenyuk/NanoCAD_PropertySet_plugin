@@ -235,7 +235,8 @@ void DynPropertiesManager::LoadPropsFromList(BSTR file_path)
                 else if (prop_type == L"double") type = VARENUM::VT_R4;
                 else if (prop_type == L"bool") type = VARENUM::VT_BOOL;
                 else if (prop_type == L"datetime") type = VARENUM::VT_DATE;
-                else if (prop_type == L"int") type = VARENUM::VT_I4;
+                else if (prop_type == L"int") type = VARENUM::VT_UI4;
+                else if (prop_type == L"long") type = VARENUM::VT_I4;
 
                 CComBSTR prop_guid(str_data[4]);
 
