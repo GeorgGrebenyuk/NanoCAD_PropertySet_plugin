@@ -4,8 +4,10 @@
 #include "xrecordmanager.h"
 
 bool DynPropertiesManager::m_bInitialized = false;
-std::vector<CComObject<CategorizedSingleDynProperty>*> DynPropertiesManager::single_value_properties = { NULL };
+//std::vector<CComObject<CategorizedSingleDynProperty>*> DynPropertiesManager::single_value_properties = { NULL };
 //
+std::map<int, std::vector<CComObject<CategorizedSingleDynProperty>*>> DynPropertiesManager::category2single_props;
+std::map<BSTR, int> DynPropertiesManager::category_name2id;
 
 AcRxClass* DynPropertiesManager::m_pClass = AcDbEntity::desc();
 
@@ -27,16 +29,25 @@ void DynPropertiesManager::initialize()
         CComObject<CategorizedSingleDynProperty>* cat_props = NULL;
         _com_util::CheckError(CComObject<CategorizedSingleDynProperty>::CreateInstance(&cat_props));
         cat_props->set_name(L"first_property");
-        cat_props->set_description("first descr");
+        cat_props->set_description(L"first descr");
         cat_props->set_type(VARENUM::VT_BSTR);
-        cat_props->set_category(1, "DefCat");
+        cat_props->set_category(1, L"DefCat");
         cat_props->AddRef();
 
+        
         //LONG count;
         //prop_manager->GetDynamicPropertyCount(&count);
         //single_value_properties.push_back(&count);
-        single_value_properties.push_back(cat_props);
-        _com_util::CheckError(prop_manager->AddProperty(cat_props));
+        if (SaveSinglePropertyIfNeed(cat_props))
+        {
+            category_name2id.insert(std::pair<BSTR, int>(L"DefCat", 1));
+            _com_util::CheckError(prop_manager->AddProperty(cat_props));
+        }
+        else {
+            _com_util::CheckError(prop_manager->RemoveProperty(cat_props));
+            cat_props->Release();
+
+        }        
         
     }
     catch (const _com_error&)
@@ -57,15 +68,20 @@ void DynPropertiesManager::uninitialize()
         CComPtr<IPropertyManager> prop_manager;
         if ((prop_manager.p = GET_OPMPROPERTY_MANAGER(m_pClass)) == NULL)
             _com_issue_error(E_FAIL);
-        for (auto single_prop : single_value_properties)
+        for (auto cat_props : category2single_props)
         {
-            if (single_prop)
+            for (auto s_props : cat_props.second)
             {
-                //CComPtr<IDynamicProperty> prop;
-                //HRESULT res = prop_manager->GetDynamicProperty(*single_prop, &prop);
-                _com_util::CheckError(prop_manager->RemoveProperty(single_prop));
-                //prop->Release();
+                if (s_props)
+                {
+                    //CComPtr<IDynamicProperty> prop;
+                    //HRESULT res = prop_manager->GetDynamicProperty(*single_prop, &prop);
+                    _com_util::CheckError(prop_manager->RemoveProperty(s_props));
+                    s_props->Release();
+                    //prop->Release();
+                }
             }
+            
         }
         /*for (auto cat_prop : list_properties)
         {
@@ -104,8 +120,15 @@ void DynPropertiesManager::CreateSingleDynProperty(BSTR name, BSTR description,
     //LONG count;
     //prop_manager->GetDynamicPropertyCount(&count);
     //single_value_properties.push_back(&count);
-    single_value_properties.push_back(new_property);
-    _com_util::CheckError(prop_manager->AddProperty(new_property));
+    bool need_ad = SaveSinglePropertyIfNeed(new_property);
+    if (need_ad)
+    {
+        _com_util::CheckError(prop_manager->AddProperty(new_property));
+    }
+    else {
+        prop_manager->RemoveProperty(new_property);
+        new_property->Release();
+    }
 }
 
 void DynPropertiesManager::AssignSingleDynPropertyToObject()
@@ -150,11 +173,12 @@ void DynPropertiesManager::GetCategories(std::map<BSTR, PROPCAT>* categories)
     if ((prop_manager.p = GET_OPMPROPERTY_MANAGER(m_pClass)) == NULL)
         _com_issue_error(E_FAIL);
 
+    
     CComObject<CategorizedSingleDynProperty>* temp_property = NULL;
     _com_util::CheckError(CComObject<CategorizedSingleDynProperty>::CreateInstance(&temp_property));
 
     bool need_continue = false;
-    int counter_categories = 1;
+    /*int counter_categories = 1;
     do 
     {
         BSTR name = NULL;
@@ -162,7 +186,15 @@ void DynPropertiesManager::GetCategories(std::map<BSTR, PROPCAT>* categories)
         if (name != NULL) categories->insert(std::pair< BSTR, PROPCAT>(name, counter_categories));
         else need_continue = false;
         counter_categories++;
-    } while (need_continue);
+    } while (need_continue);*/
+    LONG count;
+    prop_manager->GetDynamicPropertyCount(&count);
+    for (int i = 0; i < count; i++)
+    {
+        BSTR name = NULL;
+        temp_property->GetCategoryName(i, NULL, &name);
+        if (name != NULL) categories->insert(std::pair< BSTR, PROPCAT>(name, i));
+    }
 
 
     _com_util::CheckError(prop_manager->RemoveProperty(temp_property));
@@ -172,19 +204,21 @@ void DynPropertiesManager::GetCategories(std::map<BSTR, PROPCAT>* categories)
 
 void DynPropertiesManager::GetCategoryPropcatByName(BSTR name, PROPCAT* propcat)
 {
-    std::map<BSTR, PROPCAT> all_cats;
-    GetCategories(&all_cats);
-    bool f = false;
-    for (auto cat : all_cats)
+    //std::map<BSTR, PROPCAT> all_cats;
+    //GetCategories(&all_cats);
+    //category_name2id.insert(std::pair<BSTR, int>(L"DefCat", 1));
+    //bool f = false;
+    for (auto cat : category_name2id)
     {
-        if (cat.first == name) 
+        if (wcscmp(cat.first, name) == 0)
         {
             *propcat = cat.second;
-            f = true;
-            break;
+            return;
         }
     }
-    if (!f) *propcat = all_cats.size() + 1;
+    int size = category_name2id.size() + 1;
+    category_name2id.insert(std::pair<BSTR, int>(name, size));
+    *propcat = size;
 }
 
 
@@ -248,3 +282,72 @@ void DynPropertiesManager::LoadPropsFromList(BSTR file_path)
     }
     file_data.close();     // закрываем файл
 }
+
+bool DynPropertiesManager::SaveSinglePropertyIfNeed(CComObject<CategorizedSingleDynProperty>* _property)
+{
+    if (category2single_props.empty()) 
+    {
+        category2single_props.insert(std::pair<int, std::vector<CComObject<CategorizedSingleDynProperty>*>> {_property->p_Cat, { _property }});
+        return true;
+    }
+    for (auto p : category2single_props)
+    {
+        if (p.first == _property->p_Cat)
+        {
+            for (auto pr : p.second)
+            {
+                if (wcscmp(pr->p_name, _property->p_name) == 0)
+                    return false;
+            }
+            p.second.push_back(_property);
+            return true;
+        }
+    }
+    //Если такового свойства не было найдено
+    category2single_props.insert(std::pair<int, std::vector<CComObject<CategorizedSingleDynProperty>*>> {_property->p_Cat, { _property }});
+    return true;
+
+}
+static char* bstr_to_str(BSTR source) {
+    //source = L"lol2inside";
+    _bstr_t wrapped_bstr = _bstr_t(source);
+    int length = wrapped_bstr.length();
+    char* char_array = new char[length];
+    strcpy_s(char_array, length + 1, wrapped_bstr);
+    return char_array;
+}
+void DynPropertiesManager::WriteDiagnostikInfo() {
+    acutPrintf(_T("\nInfo about categories - names and PROPCAT"));
+    for (auto a : category_name2id)
+    {
+        stringstream ss;
+        ss << "\n" << bstr_to_str(a.first) << " " << a.second;
+        CComBSTR str(ss.str().c_str());
+        acutPrintf(str);
+        ss.clear();
+    }
+    acutPrintf(_T("\nInfo about categories - and linked properties"));
+    for (auto a : category2single_props)
+    {
+
+        stringstream ss;
+        ss << "\n Info for category = " << a.first;
+        CComBSTR str(ss.str().c_str());
+        acutPrintf(str);
+        ss.clear();
+        for (auto pr : a.second)
+        {
+            stringstream ss2;
+            ss2 << "\n Property info: " << 
+                bstr_to_str(pr->p_name) << " " << 
+                bstr_to_str(pr->p_description) << " " << 
+                pr->p_Cat << " " << 
+                bstr_to_str(pr->p_CatName) << " " <<
+                pr->p_valueType;
+            CComBSTR str2(ss2.str().c_str());
+            acutPrintf(str2);
+            ss2.clear();
+        }
+    }
+}
+

@@ -66,17 +66,11 @@ public:
 		name | description | vartype | category_name
 	*/
 	static void LoadPropsFromList(BSTR file_path);
-	/// <summary>
-	/// Коллекция всех "одиночных" свойств проекта
-	/// </summary>
-	/// CategorizedSingleDynProperty
-	//static std::vector<LONG*> single_value_properties;
-	static std::vector<CComObject<CategorizedSingleDynProperty>*> single_value_properties;
-	/// <summary>
-	/// Коллекция всех свойств-перечислений проекта
-	/// </summary>
-	//static std::vector<CComObject<CategorizedListDynProperty>*> list_properties;
-	
-	//CComPtr<IPropertyManager> prop_manager;
+
+	static std::map<BSTR, int> category_name2id;
+	static bool SaveSinglePropertyIfNeed (CComObject<CategorizedSingleDynProperty>* _property);
+	static std::map<int, std::vector<CComObject<CategorizedSingleDynProperty>*>> category2single_props;
+
+	static void WriteDiagnostikInfo();
 };
 #endif

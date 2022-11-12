@@ -1,14 +1,8 @@
-#include "SimpleDynProperty.hpp"
+#include "stdafx.h"
+#include "CategorizedSingleDynProperty.hpp"
 #include "xrecordmanager.h"
 
-SingleDynProperty::SingleDynProperty() :
-    p_name(L"DefaultName"),
-    p_description(L"111"),
-    p_valueType(VT_BSTR)
-{
-    this->prop_id = NULL;
-}
-STDMETHODIMP SingleDynProperty::GetGUID( /*[out]*/GUID* propGUID)
+STDMETHODIMP CategorizedSingleDynProperty::GetGUID( /*[out]*/GUID* propGUID)
 {
     if (this->prop_id != NULL)
     {
@@ -21,14 +15,14 @@ STDMETHODIMP SingleDynProperty::GetGUID( /*[out]*/GUID* propGUID)
     }
     return E_NOTIMPL;
 }
-STDMETHODIMP SingleDynProperty::GetDisplayName( /*[out]*/BSTR* pBstrName)
+STDMETHODIMP CategorizedSingleDynProperty::GetDisplayName( /*[out]*/BSTR* pBstrName)
 {
     if (pBstrName == NULL)
         return E_POINTER;
     *pBstrName = ::SysAllocString(p_name);
     return S_OK;
 }
-STDMETHODIMP SingleDynProperty::IsPropertyEnabled( /*[in]*/LONG_PTR objectID,
+STDMETHODIMP CategorizedSingleDynProperty::IsPropertyEnabled( /*[in]*/LONG_PTR objectID,
     /*[out]*/BOOL* pbEnabled)
 {
     if (pbEnabled == NULL)
@@ -38,34 +32,34 @@ STDMETHODIMP SingleDynProperty::IsPropertyEnabled( /*[in]*/LONG_PTR objectID,
     *pbEnabled = XRecordManager::isDataPresent(id) ? TRUE : FALSE;
     return S_OK;
 }
-STDMETHODIMP SingleDynProperty::IsPropertyReadOnly( /*[out]*/BOOL* pbReadonly)
+STDMETHODIMP CategorizedSingleDynProperty::IsPropertyReadOnly( /*[out]*/BOOL* pbReadonly)
 {
     if (pbReadonly == NULL)
         return E_POINTER;
     *pbReadonly = FALSE;
     return S_OK;
 }
-STDMETHODIMP SingleDynProperty::GetDescription( /*[out]*/BSTR* pBstrName)
+STDMETHODIMP CategorizedSingleDynProperty::GetDescription( /*[out]*/BSTR* pBstrName)
 {
     if (pBstrName == NULL)
         return E_POINTER;
-    *pBstrName = ::SysAllocString(p_description);
+    *pBstrName = ::SysAllocString(p_description); //p_description
     return S_OK;
 }
 
 // *** Basic property value information ***
-STDMETHODIMP SingleDynProperty::GetCurrentValueName( /*[out]*/BSTR* pbstrName)
+STDMETHODIMP CategorizedSingleDynProperty::GetCurrentValueName( /*[out]*/BSTR* pbstrName)
 {
     return E_NOTIMPL;
 }
-STDMETHODIMP SingleDynProperty::GetCurrentValueType( /*[out]*/VARTYPE* pVarType)
+STDMETHODIMP CategorizedSingleDynProperty::GetCurrentValueType( /*[out]*/VARTYPE* pVarType)
 {
     if (pVarType == NULL)
         return E_POINTER;
     *pVarType = p_valueType;
     return S_OK;
 }
-STDMETHODIMP SingleDynProperty::GetCurrentValueData( /*in*/LONG_PTR objectID,
+STDMETHODIMP CategorizedSingleDynProperty::GetCurrentValueData( /*in*/LONG_PTR objectID,
     /*[out]*/VARIANT* pVarData)
 {
     if (pVarData == NULL)
@@ -88,7 +82,7 @@ STDMETHODIMP SingleDynProperty::GetCurrentValueData( /*in*/LONG_PTR objectID,
 
     return S_OK;
 }
-STDMETHODIMP SingleDynProperty::SetCurrentValueData( /*[in]*/LONG_PTR objectID,
+STDMETHODIMP CategorizedSingleDynProperty::SetCurrentValueData( /*[in]*/LONG_PTR objectID,
     /*[in]*/const VARIANT varData)
 {
     AcDbObjectId id;
@@ -120,32 +114,32 @@ STDMETHODIMP SingleDynProperty::SetCurrentValueData( /*[in]*/LONG_PTR objectID,
 }
 
 //*** Notifications ***
-STDMETHODIMP SingleDynProperty::Connect( /*[in]*/IDynamicPropertyNotify* pSink)
+STDMETHODIMP CategorizedSingleDynProperty::Connect( /*[in]*/IDynamicPropertyNotify* pSink)
 {
     if (pSink == NULL)
         return E_POINTER;
     m_pNotifySink = pSink;
     return S_OK;
 }
-STDMETHODIMP SingleDynProperty::Disconnect()
+STDMETHODIMP CategorizedSingleDynProperty::Disconnect()
 {
     m_pNotifySink.Release();
     return S_OK;
 }
-void SingleDynProperty::set_name(bstr_t name)
+void CategorizedSingleDynProperty::set_name(BSTR name)
 {
     this->p_name = name;
 
 }
-void SingleDynProperty::set_type(VARENUM type)
+void CategorizedSingleDynProperty::set_type(VARENUM type)
 {
     this->p_valueType = type;
 }
-void SingleDynProperty::set_guid(BSTR guid)
+void CategorizedSingleDynProperty::set_guid(BSTR guid)
 {
     this->prop_id = guid;
 }
-void SingleDynProperty::set_description(bstr_t desk)
+void CategorizedSingleDynProperty::set_description(BSTR desk)
 {
     this->p_description = desk;
 }

@@ -57,10 +57,6 @@ END_OBJECT_MAP()
 //for now it looks like this:
 //double,double,long
 //
-void assignData()
-{
-    DynPropertiesManager::AssignSingleDynPropertyToObject();
-}
 const TCHAR* cstrCommandGroup = _T("ASDK_SIMPLEDYNPROPS");
 
 void create_props() 
@@ -79,8 +75,9 @@ ncrxEntryPoint(NcRx::AppMsgCode msg, void* pkt)
         acrxDynamicLinker->registerAppMDIAware(pkt);
         
         DynPropertiesManager::initialize();
-        acedRegCmds->addCommand(cstrCommandGroup,_T("_add_to_object"),_T("add_to_object"),ACRX_CMD_MODAL, assignData);
+        acedRegCmds->addCommand(cstrCommandGroup,_T("_add_to_object"),_T("add_to_object"),ACRX_CMD_MODAL, DynPropertiesManager::AssignSingleDynPropertyToObject);
         acedRegCmds->addCommand(cstrCommandGroup, _T("_create_props"), _T("create_props"), ACRX_CMD_MODAL, create_props);
+        acedRegCmds->addCommand(cstrCommandGroup, _T("_getting_info"), _T("getting_info"), ACRX_CMD_MODAL, DynPropertiesManager::WriteDiagnostikInfo);
 		break;
 	case AcRx::kUnloadAppMsg:
         acedRegCmds->removeGroup(cstrCommandGroup);

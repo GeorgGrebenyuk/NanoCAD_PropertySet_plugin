@@ -39,9 +39,6 @@
     <ClInclude Include="DynPropertiesManager.hpp">
       <Filter>Props</Filter>
     </ClInclude>
-    <ClInclude Include="SimpleDynProperty.hpp">
-      <Filter>Props</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

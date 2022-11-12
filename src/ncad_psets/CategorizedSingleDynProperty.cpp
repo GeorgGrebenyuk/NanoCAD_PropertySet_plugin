@@ -5,15 +5,19 @@
 
 
 ////////////////////////////
-CategorizedSingleDynProperty::CategorizedSingleDynProperty() :
-    p_Cat(1), p_CatName("Default")
+CategorizedSingleDynProperty::CategorizedSingleDynProperty()
+    :p_Cat(1), p_CatName(L"Default"), p_name(L"RootProperty"), p_description(L""),
+    p_valueType(VT_BSTR), prop_id (NULL)
 {
-    p_name = L"DefaultName";
-    p_description = L"111";
-    p_valueType = VT_BSTR;
+    // 
+
+    //p_name = L"DefaultName";
+    //p_description = L"111";
+    //p_valueType = VT_BSTR;
+    //prop_id = NULL;
 }
 
-void CategorizedSingleDynProperty::set_category(PROPCAT cat_index, bstr_t cat_name)
+void CategorizedSingleDynProperty::set_category(PROPCAT cat_index, BSTR cat_name)
 {
     this->p_Cat = cat_index;
     this->p_CatName = cat_name;
@@ -37,6 +41,6 @@ STDMETHODIMP CategorizedSingleDynProperty::GetCategoryName(
         return E_POINTER;
     //if (propcat != 1)
     //    return E_FAIL;
-    *pBstrName = p_CatName;
+    *pBstrName = ::SysAllocString(p_CatName);
     return S_OK;
 }
