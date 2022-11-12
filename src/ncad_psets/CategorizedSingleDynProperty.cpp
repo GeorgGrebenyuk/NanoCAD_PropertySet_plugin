@@ -35,8 +35,8 @@ STDMETHODIMP CategorizedSingleDynProperty::GetCategoryName(
 {
     if (pBstrName == NULL)
         return E_POINTER;
-    if (propcat != 1)
-        return E_FAIL;
+    //if (propcat != 1)
+    //    return E_FAIL;
     *pBstrName = p_CatName;
     return S_OK;
 }
