@@ -1,12 +1,12 @@
 #ifndef __DYNPROPERTIESMANAGER_H_
 #define __DYNPROPERTIESMANAGER_H_
 
-#include "rxdlinkr.h"
-#include "dbents.h"
-#include "accmd.h"
-#include "adslib.h"
+//#include "rxdlinkr.h"
+//#include "dbents.h"
+//#include "accmd.h"
+//#include "adslib.h"
 #include "resource.h"
-#include "initguid.h"
+//#include "initguid.h"
 #include <comdef.h>
 
 #include "vector"
@@ -61,16 +61,23 @@ public:
 
 	/*Функции для массовых операций*/
 
-	/*Создание свойств из внешнего текстового файла*/
-	/*
-		name | description | vartype | category_name
-	*/
+	//Создание свойств из внешнего текстового файла
 	static void LoadPropsFromList(BSTR file_path);
+	/*Вывод в консоль информации по внутренним контейнерам*/
+	static void WriteDiagnostikInfo();
+	/*Создание нового свойства из консоли*/
 
+
+	/*Контейнеры*/
+	static std::vector<CComObject<CategorizedSingleDynProperty>*> dyn_s_props;
 	static std::map<BSTR, int> category_name2id;
+
+	/*Внутренние функции*/
 	static bool SaveSinglePropertyIfNeed (CComObject<CategorizedSingleDynProperty>* _property);
 	static std::map<int, std::vector<CComObject<CategorizedSingleDynProperty>*>> category2single_props;
-
-	static void WriteDiagnostikInfo();
+private:
+	/*Устанавливает значения по умолчанию для значений свойств, в очередности их добавления*/
+	static void SetResbuf(resbuf* rb);
+	
 };
 #endif

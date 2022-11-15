@@ -59,8 +59,5 @@
     <ClCompile Include="DynPropertiesManager.cpp">
       <Filter>Props</Filter>
     </ClCompile>
-    <ClCompile Include="SimpleDynProperty.cpp">
-      <Filter>Props</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

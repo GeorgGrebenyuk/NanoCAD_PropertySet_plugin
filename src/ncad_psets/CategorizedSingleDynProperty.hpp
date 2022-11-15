@@ -23,16 +23,18 @@ public:
 		COM_INTERFACE_ENTRY(ICategorizeProperties)
 	END_COM_MAP()
 public:
-    STDMETHOD(GetGUID)( /*[out]*/GUID* propGUID);
-    STDMETHOD(GetDisplayName)( /*[out]*/BSTR* bstrName);
-    STDMETHOD(IsPropertyEnabled)( /*[in]*/LONG_PTR objectID, /*[out]*/BOOL* pbEnabled);
-    STDMETHOD(IsPropertyReadOnly)( /*[out]*/BOOL* pbReadonly);
-    STDMETHOD(GetDescription)( /*[out]*/BSTR* bstrName);
-    STDMETHOD(GetCurrentValueName)( /*[out]*/BSTR* pbstrName);
-    STDMETHOD(GetCurrentValueType)( /*[out]*/VARTYPE* pVarType);
-    STDMETHOD(GetCurrentValueData)( /*in*/LONG_PTR objectID, /*[out]*/VARIANT* pvarData);
-    STDMETHOD(SetCurrentValueData)( /*[in]*/LONG_PTR objectID,/*[in]*/const VARIANT varData);
-
+    STDMETHOD(GetGUID)( /*[out]*/GUID* propGUID) override;
+    STDMETHOD(GetDisplayName)( /*[out]*/BSTR* bstrName) override;
+    STDMETHOD(IsPropertyEnabled)( /*[in]*/LONG_PTR objectID, /*[out]*/BOOL* pbEnabled) override;
+    STDMETHOD(IsPropertyReadOnly)( /*[out]*/BOOL* pbReadonly) override;
+    STDMETHOD(GetDescription)( /*[out]*/BSTR* bstrName) override;
+    STDMETHOD(GetCurrentValueName)( /*[out]*/BSTR* pbstrName) override;
+    STDMETHOD(GetCurrentValueType)( /*[out]*/VARTYPE* pVarType) override;
+    STDMETHOD(GetCurrentValueData)( /*in*/LONG_PTR objectID, /*[out]*/VARIANT* pvarData) override;
+    STDMETHOD(SetCurrentValueData)( /*[in]*/LONG_PTR objectID,/*[in]*/const VARIANT varData) override;
+    //*** Notifications ***
+    STDMETHOD(Connect)( /*[in]*/IDynamicPropertyNotify* pSink) override;
+    STDMETHOD(Disconnect)() override;
     
     STDMETHOD(MapPropertyToCategory)(
         /* [in]  */ DISPID dispid,
@@ -42,9 +44,7 @@ public:
         /* [in]  */ LCID lcid,
         /* [out] */ BSTR* pbstrName);
 
-    //*** Notifications ***
-    STDMETHOD(Connect)( /*[in]*/IDynamicPropertyNotify* pSink);
-    STDMETHOD(Disconnect)();
+
 
     CComPtr<IDynamicPropertyNotify> m_pNotifySink;
 
@@ -57,13 +57,9 @@ public:
     VARTYPE p_valueType;
     void set_type(VARENUM type);
 
-    BSTR prop_id;
-    void set_guid(BSTR guid);
-
     //edit property
     PROPCAT p_Cat;
     _bstr_t p_CatName;
-    void set_category(PROPCAT cat_index, BSTR cat_name);
 
 };
 #endif

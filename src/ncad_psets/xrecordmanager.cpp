@@ -38,7 +38,7 @@ Acad::ErrorStatus lockDocument(const AcDbObjectId& id)
     return acDocManager->lockDocument(pDocument, AcAp::kAutoWrite);
 }
 
-Acad::ErrorStatus XRecordManager::createDefaultData(const AcDbObjectId& id)
+Acad::ErrorStatus XRecordManager::createDefaultData(const AcDbObjectId& id, resbuf* rb)
 {
     Acad::ErrorStatus es;
     es = lockDocument(id);
@@ -48,7 +48,8 @@ Acad::ErrorStatus XRecordManager::createDefaultData(const AcDbObjectId& id)
     if ((es=pO.openStatus())!=Acad::eOk)
         return es;
     AcDbObjectId idExtDict;
-    if ((idExtDict=pO->extensionDictionary())==AcDbObjectId::kNull){
+    if ((idExtDict=pO->extensionDictionary())==AcDbObjectId::kNull)
+    {
         if ((es=pO->createExtensionDictionary())!=Acad::eOk)
             return es;
         idExtDict= pO->extensionDictionary();
@@ -64,7 +65,7 @@ Acad::ErrorStatus XRecordManager::createDefaultData(const AcDbObjectId& id)
     pX.create();
     if (pX.object()==NULL)
         return Acad::eOutOfMemory;
-    resbuf * rb = acutBuildList(AcDb::kDxfReal,0.0,AcDb::kDxfReal,0.0,AcDb::kDxfInt32, 0,RTNONE);
+    //resbuf * rb = acutBuildList(AcDb::kDxfInt32,84,RTNONE);
     if (rb==NULL)
         return Acad::eOutOfMemory;
     if ((es=pX->setFromRbChain(*rb))!=Acad::eOk){

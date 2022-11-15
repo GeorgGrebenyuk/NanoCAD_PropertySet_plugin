@@ -205,7 +205,6 @@
     <ClCompile Include="CategorizedListDynProperty.cpp" />
     <ClCompile Include="DynPropertiesManager.cpp" />
     <ClCompile Include="CategorizedSingleDynProperty.cpp" />
-    <ClCompile Include="SimpleDynProperty.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="simpledynprops.cpp" />
     <ClCompile Include="xrecordmanager.cpp" />

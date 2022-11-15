@@ -75,7 +75,7 @@ ncrxEntryPoint(NcRx::AppMsgCode msg, void* pkt)
         acrxDynamicLinker->registerAppMDIAware(pkt);
         
         DynPropertiesManager::initialize();
-        acedRegCmds->addCommand(cstrCommandGroup,_T("_add_to_object"),_T("add_to_object"),ACRX_CMD_MODAL, DynPropertiesManager::AssignSingleDynPropertyToObject);
+        acedRegCmds->addCommand(cstrCommandGroup,_T("_add_to_object"),_T("add_to_object"), ACRX_CMD_MODAL, DynPropertiesManager::AssignSingleDynPropertyToObject);
         acedRegCmds->addCommand(cstrCommandGroup, _T("_create_props"), _T("create_props"), ACRX_CMD_MODAL, create_props);
         acedRegCmds->addCommand(cstrCommandGroup, _T("_getting_info"), _T("getting_info"), ACRX_CMD_MODAL, DynPropertiesManager::WriteDiagnostikInfo);
 		break;
