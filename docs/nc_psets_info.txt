@@ -1,0 +1,39 @@
+https://github.com/kevinzhwl/ObjectARXCore/blob/master/2004/inc/axtempl.h
+https://adn-cis.org/forum/index.php?topic=4271.15
+https://adn-cis.org/forum/index.php?topic=8743.msg34080#msg34080
+
+
+https://developer.nanocad.ru/redmine/boards/10/topics/2568
+
+Поиски
+https://adn-cis.org/forum/index.php?action=search2
+https://adn-cis.org/forum/index.php?action=search2
+
+
+# Статьи
+Получение значений свойств из COM-обертки примитива https://adn-cis.org/poluchenie-znachenij-svojstv-iz-com-obertki-primitiva.html
+Как создать конус средствами ObjectARX , который можно было бы редактировать https://adn-cis.org/kak-sozdat-konus-sredstvami-objectarx-,-kotoryij-mozhno-byilo-byi-redaktirovat.html
+Сохранение собственных значений на уровне dwg-файла https://adn-cis.org/soxranenie-sobstvennyix-znachenij-na-urovne-dwg-fajla.html
+В каких случаях следует блокировать документ https://adn-cis.org/v-kakix-sluchayax-sleduet-blokirovat-dokument.html
+Как получить свойство документа? https://adn-cis.org/kak-poluchit-svojstvo-dokumenta.html
+Как показать правильно числовое значение в Панели Свойств (OPM)? https://adn-cis.org/kak-pokazat-pravilno-chislovoe-znachenie-v-paneli-svojstv-(opm).html
+Как определить что свойства примитива изменены при помощи Панели Свойств? https://adn-cis.org/kak-opredelit-chto-svojstva-primitiva-izmenenyi-pri-pomoshhi-paneli-svojstv.html
+Хранение 64-битного целого в ResultBuffer https://adn-cis.org/xranenie-64-bitnogo-czelogo-v-resultbuffer.html
+Показ локализованных имён свойств с использованием Не-COM системы свойств https://adn-cis.org/pokaz-lokalizovannyix-imyon-svojstv-s-ispolzovaniem-ne-com-sistemyi-svojstv.html
+
+
+
+Рекомендуемый способ для получения доступа к AutoCAD COM интерфейсу с помощью C++ https://adn-cis.org/rekomenduemyij-sposob-dlya-polucheniya-dostupa-k-autocad-com-interfejsu-s-pomoshhyu-c.html
+
+
+Установка значений
+
+-Дробные числа:
+STDMETHOD(SetCurrentValueData): 
+STDMETHOD(GetCurrentValueData):
+
+-Строки:
+STDMETHOD(SetCurrentValueData): 
+resbuf data;
+    data.restype = AcDb::kDxfXTextString;
+    data.resval.rstring = V_BSTR(&varData);
