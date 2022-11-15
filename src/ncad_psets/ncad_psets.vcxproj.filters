@@ -33,9 +33,6 @@
     <ClInclude Include="CategorizedSingleDynProperty.hpp">
       <Filter>Props</Filter>
     </ClInclude>
-    <ClInclude Include="CategorizedListDynProperty.hpp">
-      <Filter>Props</Filter>
-    </ClInclude>
     <ClInclude Include="DynPropertiesManager.hpp">
       <Filter>Props</Filter>
     </ClInclude>
@@ -51,9 +48,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CategorizedSingleDynProperty.cpp">
-      <Filter>Props</Filter>
-    </ClCompile>
-    <ClCompile Include="CategorizedListDynProperty.cpp">
       <Filter>Props</Filter>
     </ClCompile>
     <ClCompile Include="DynPropertiesManager.cpp">

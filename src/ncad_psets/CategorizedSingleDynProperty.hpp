@@ -43,9 +43,6 @@ public:
         /* [in]  */ PROPCAT propcat,
         /* [in]  */ LCID lcid,
         /* [out] */ BSTR* pbstrName);
-
-
-
     CComPtr<IDynamicPropertyNotify> m_pNotifySink;
 
     BSTR p_name;

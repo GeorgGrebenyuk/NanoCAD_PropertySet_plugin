@@ -26,14 +26,6 @@ https://adn-cis.org/forum/index.php?action=search2
 Рекомендуемый способ для получения доступа к AutoCAD COM интерфейсу с помощью C++ https://adn-cis.org/rekomenduemyij-sposob-dlya-polucheniya-dostupa-k-autocad-com-interfejsu-s-pomoshhyu-c.html
 
 
-Установка значений
-
--Дробные числа:
-STDMETHOD(SetCurrentValueData): 
-STDMETHOD(GetCurrentValueData):
-
--Строки:
-STDMETHOD(SetCurrentValueData): 
-resbuf data;
-    data.restype = AcDb::kDxfXTextString;
-    data.resval.rstring = V_BSTR(&varData);
+Вопросы:
+1. Как можно не сохранять значения в XData?
+2. Если в качестве хранилища будет внешний файл\бд, то как сделать синхронизацию с ним данных чертежа? initialize(): регистрация свойств и их назначение со значениями объектам чертежа (сохраненным через Handle); uninitialize(): запись в файл свойств и значений. Удаление динамических свойств из файла. В качестве этой внешней базы -- лучше использовать XML с XSD схемой. Лучше конечно sqlite, но пока не будем усложнять

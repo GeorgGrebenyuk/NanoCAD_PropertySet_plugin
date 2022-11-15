@@ -6,7 +6,7 @@
 
 ////////////////////////////
 CategorizedSingleDynProperty::CategorizedSingleDynProperty()
-    :p_Cat(1), p_CatName(L"Default"), p_name(L"RootProperty"), p_description(L""),
+    :p_Cat(1), p_CatName(L"Default Category"), p_name(L"RootProperty"), p_description(L""),
     p_valueType(VT_I4)
 {
 

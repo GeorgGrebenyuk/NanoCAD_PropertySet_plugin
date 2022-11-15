@@ -193,7 +193,6 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="CategorizedListDynProperty.hpp" />
     <ClInclude Include="DynPropertiesManager.hpp" />
     <ClInclude Include="CategorizedSingleDynProperty.hpp" />
     <ClInclude Include="stdafx.h" />
@@ -202,7 +201,6 @@
     <ClInclude Include="xrecordmanager.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CategorizedListDynProperty.cpp" />
     <ClCompile Include="DynPropertiesManager.cpp" />
     <ClCompile Include="CategorizedSingleDynProperty.cpp" />
     <ClCompile Include="stdafx.cpp" />
