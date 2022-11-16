@@ -27,9 +27,6 @@
     <ClInclude Include="simpledynprops.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="xrecordmanager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CategorizedSingleDynProperty.hpp">
       <Filter>Props</Filter>
     </ClInclude>
@@ -42,9 +39,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="simpledynprops.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="xrecordmanager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CategorizedSingleDynProperty.cpp">

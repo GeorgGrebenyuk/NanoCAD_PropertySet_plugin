@@ -1,7 +1,6 @@
 
 #include "stdafx.h"
 #include "DynPropertiesManager.hpp"
-#include "xrecordmanager.h"
 
 bool DynPropertiesManager::m_bInitialized = false;
 std::vector<CComObject<CategorizedSingleDynProperty>*>DynPropertiesManager::dyn_s_props{ };
@@ -103,31 +102,60 @@ void DynPropertiesManager::AssignSingleDynPropertyToObject()
     }
     ads_ssfree(ss);
 }
+static bool operator<(const GUID& a, const GUID& b)
+{
+    return (a.Data1 < b.Data1);
+}
+//static bool operator<(const AcDbObjectId& a, const AcDbObjectId& b)
+//{
+//    return (a.asOldId() < b.asOldId());
+//}
+bool is_data_in_objects2properties(AcDbObjectId* id) {
+    for (auto d : DynPropertiesManager::objects2properties)
+    {
+        if (d.first == *id) return true;
+    }
+    return false;
+}
+bool is_data_in_nested_map(GUID* id, std::map<GUID, VARIANT>* collection, VARIANT* data) {
+    for (auto d : *collection)
+    {
+        if (d.first == *id) 
+        {
+            *data = d.second;
+            return true;
+        }
+    }
+    return false;
+}
+
 void DynPropertiesManager::SetPropertyValue(AcDbObjectId* id, 
     GUID* property_id, VARIANT* data)
 {
     /*ѕровер€ем, имеетс€ ли в objects2properties запись дл€ данного объекта
     и если нет, создаем пустую запись. √лобальна€ цель -- получить вектор значений*/
-    if (objects2properties.find(*id) == objects2properties.end())
+    if (!is_data_in_objects2properties(id))
     {
-        objects2properties.insert(std::pair<AcDbObjectId, std::map<GUID, VARIANT>>
-        {*id, {}});
+        std::map<GUID, VARIANT> setting_data;
+        setting_data.insert({ *property_id, *data });
+        objects2properties.insert(std::make_pair(*id, setting_data));
+        setting_data.clear();        
+        return;
     }
-    std::map<GUID, VARIANT>* prop_values = &(objects2properties[*id]);
-    /*ѕровер€ем коллекцию значений свойств дл€ смены данного значени€ свойства*/
-    if (prop_values->find(*property_id) == prop_values->end())
+    /*ѕровер€ем коллекцию значений свойств дл€ перезаписи/установки данного значени€ свойства*/
+    if (is_data_in_nested_map(property_id, &objects2properties[*id], data))
     {
-        prop_values->insert(std::pair<GUID, VARIANT>{*property_id,*data});
+        //std::map<GUID, VARIANT> setting_data;
+        //setting_data.insert(std::make_pair(*property_id, *data));
+        objects2properties[*id].insert(std::make_pair(*property_id, * data));
     }
-    else prop_values->at(*property_id) = *data;
+    else objects2properties[*id][*property_id] = *data;
 
 }
 bool DynPropertiesManager::GetPropertyValue(AcDbObjectId* id,
     GUID* property_id, VARIANT* data)
 {
-    if (objects2properties.find(*id) == objects2properties.end()) return false;
-    std::map<GUID, VARIANT>* prop_values = &(objects2properties[*id]);
-    if (prop_values->find(*property_id) == prop_values->end()) return false;
-    *data = prop_values->at(*property_id);
+    if (!is_data_in_objects2properties(id)) return false;
+    if (!is_data_in_nested_map(property_id, &(objects2properties[*id]), data)) return false;
     return true;
 }

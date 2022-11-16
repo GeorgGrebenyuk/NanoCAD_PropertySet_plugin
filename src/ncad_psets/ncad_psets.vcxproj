@@ -198,14 +198,12 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="simpledynprops.h" />
-    <ClInclude Include="xrecordmanager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DynPropertiesManager.cpp" />
     <ClCompile Include="CategorizedSingleDynProperty.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="simpledynprops.cpp" />
-    <ClCompile Include="xrecordmanager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

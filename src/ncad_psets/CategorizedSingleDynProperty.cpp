@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "CategorizedSingleDynProperty.hpp"
-#include "xrecordmanager.h"
 #include "DynPropertiesManager.hpp"
 
 ////////////////////////////
