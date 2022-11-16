@@ -7,6 +7,7 @@
 //#include "SimpleDynProperty.hpp"
 #include "dynprops.h"
 
+
 /// <summary>
 /// Class for descripte dynamic properties that contains in category
 /// </summary>
@@ -58,6 +59,7 @@ public:
     PROPCAT p_Cat;
     _bstr_t p_CatName;
 
+    //bool is_value_assigned = false;
 };
 #endif
 

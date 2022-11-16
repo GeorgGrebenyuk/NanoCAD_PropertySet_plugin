@@ -37,12 +37,16 @@ public:
 		/*in*/BSTR category_name);
 	/*Присвоение объекту модели свойств с выбором*/
 	static void AssignSingleDynPropertyToObject();
-
+	//////////////
 	/*Контейнеры*/
+	//////////////
 	static std::vector<CComObject<CategorizedSingleDynProperty>*> dyn_s_props;
-private:
-	/*Устанавливает значения по умолчанию для значений свойств, в очередности их добавления*/
-	static void SetResbuf(resbuf* rb);
-	
+	//static std::map<GUID, int> props_id2index;
+	/*Сохранение объектных значений в процессе работы с чертежом*/
+	static std::map<AcDbObjectId, std::map<GUID, VARIANT>> objects2properties;
+	/*Запись значения свойства объекта в objects2properties*/
+	static void SetPropertyValue(AcDbObjectId* id, GUID* property_id, VARIANT* data);
+	/*Получает значение свойства объекта из objects2properties*/
+	static bool GetPropertyValue(AcDbObjectId* id, GUID* property_id, VARIANT* data);
 };
 #endif

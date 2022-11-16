@@ -2,7 +2,7 @@
 
 #include "CategorizedSingleDynProperty.hpp"
 #include "xrecordmanager.h"
-
+#include "DynPropertiesManager.hpp"
 
 ////////////////////////////
 CategorizedSingleDynProperty::CategorizedSingleDynProperty()
@@ -29,7 +29,8 @@ STDMETHODIMP CategorizedSingleDynProperty::IsPropertyEnabled( /*[in]*/LONG_PTR o
         return E_POINTER;
     AcDbObjectId id;
     id.setFromOldId(objectID);
-    *pbEnabled = XRecordManager::isDataPresent(id) ? TRUE : FALSE;
+    //*pbEnabled = XRecordManager::isDataPresent(id) ? TRUE : FALSE;
+    *pbEnabled = TRUE;
     return S_OK;
 }
 STDMETHODIMP CategorizedSingleDynProperty::IsPropertyReadOnly( /*[out]*/BOOL* pbReadonly)
@@ -66,24 +67,36 @@ STDMETHODIMP CategorizedSingleDynProperty::GetCurrentValueData( /*in*/LONG_PTR o
         return E_POINTER;
     AcDbObjectId id;
     id.setFromOldId(objectID);
-    resbuf data;
-    if (XRecordManager::getData(id, 0, data) != Acad::eOk)
-        return E_FAIL;
-    switch (this->p_valueType)
+    GUID pr_id;
+    this->GetGUID(&pr_id);
+    bool is_value_present = 
+        DynPropertiesManager::GetPropertyValue(&id, &pr_id, pVarData);
+    if (is_value_present)
     {
+        //all right
+    }
+    else
+    {
+        VARIANT current_v;
+        switch (this->p_valueType)
+        {
         case VARENUM::VT_BSTR:
-            ::VariantCopy(pVarData, &_variant_t(data.resval.rstring));
+            current_v = _variant_t(L"");
             break;
         case VARENUM::VT_I4:
-            ::VariantCopy(pVarData, &_variant_t(data.resval.rint));
+            current_v = _variant_t(0);
             break;
         case VARENUM::VT_R8:
-            ::VariantCopy(pVarData, &_variant_t(data.resval.rreal));
+            current_v = _variant_t(0.0);
             break;
         case VARENUM::VT_UI4:
-            ::VariantCopy(pVarData, &_variant_t(data.resval.rlong));
+            current_v = _variant_t(0);
             break;
+        }
+        ::VariantCopy(pVarData, &_variant_t(current_v));
     }
+
+    
     return S_OK;
 }
 STDMETHODIMP CategorizedSingleDynProperty::SetCurrentValueData( /*[in]*/LONG_PTR objectID,
@@ -91,30 +104,10 @@ STDMETHODIMP CategorizedSingleDynProperty::SetCurrentValueData( /*[in]*/LONG_PTR
 {
     AcDbObjectId id;
     id.setFromOldId(objectID);
-    resbuf data;
-
-    switch (this->p_valueType)
-    {
-        case VARENUM::VT_BSTR:
-            data.restype = AcDb::kDxfXTextString;
-            data.resval.rstring = V_BSTR(&varData);
-            break;
-        case VARENUM::VT_I4:
-            data.restype = AcDb::kDxfInt32;
-            data.resval.rint = V_I4(&varData);
-            break;
-        case VARENUM::VT_R8:
-            data.restype = AcDb::kDxfReal;
-            data.resval.rreal = V_R8(&varData);
-            break;
-        case VARENUM::VT_UI4:
-            data.restype = AcDb::kDxfInt64;
-            data.resval.rlong = V_UI4(&varData);
-            break;
-
-    }
-    if (XRecordManager::setData(id, 0, data) != Acad::eOk)
-        return E_FAIL;
+    //is_value_assigned = true;
+    GUID pr_id;
+    this->GetGUID(&pr_id);
+    DynPropertiesManager::SetPropertyValue(&id, &pr_id, &(VARIANT)varData);
     //if the dynamic property is changed by some other
     if (m_pNotifySink != NULL)
         m_pNotifySink->OnChanged(this);

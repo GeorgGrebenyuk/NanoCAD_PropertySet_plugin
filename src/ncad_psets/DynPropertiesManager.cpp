@@ -5,6 +5,7 @@
 
 bool DynPropertiesManager::m_bInitialized = false;
 std::vector<CComObject<CategorizedSingleDynProperty>*>DynPropertiesManager::dyn_s_props{ };
+std::map<AcDbObjectId, std::map<GUID, VARIANT>> DynPropertiesManager::objects2properties;
 
 AcRxClass* DynPropertiesManager::m_pClass = AcDbEntity::desc();
 
@@ -72,6 +73,8 @@ void DynPropertiesManager::CreateSingleDynProperty(BSTR name, BSTR description,
     new_property->AddRef();
     _com_util::CheckError(prop_manager->AddProperty(new_property));
     dyn_s_props.push_back(new_property);
+    GUID id;
+    new_property->GetGUID(&id);
 }
 
 void DynPropertiesManager::AssignSingleDynPropertyToObject()
@@ -94,37 +97,37 @@ void DynPropertiesManager::AssignSingleDynPropertyToObject()
         {
             if (acdbGetObjectId(id, ent) == Acad::eOk)
             {
-                resbuf rb;
-                DynPropertiesManager::SetResbuf(&rb);
-                XRecordManager::createDefaultData(id, &rb);
+
             }
         }
     }
     ads_ssfree(ss);
 }
-void DynPropertiesManager::SetResbuf(resbuf* rb)
+void DynPropertiesManager::SetPropertyValue(AcDbObjectId* id, 
+    GUID* property_id, VARIANT* data)
 {
-    rb = acutBuildList(AcDb::kDxfXTextString, L"First value", AcDb::kDxfInt32, 2, AcDb::kDxfReal, 3.34);
-    /*for (int i = dyn_s_props.size(); i <= 0; i--)
+    /*Проверяем, имеется ли в objects2properties запись для данного объекта
+    и если нет, создаем пустую запись. Глобальная цель -- получить вектор значений*/
+    if (objects2properties.find(*id) == objects2properties.end())
     {
-        auto pr = dyn_s_props[i];
-        if (pr != NULL)
-        {
-            switch (pr->p_valueType)
-            {
-            case VARENUM::VT_BSTR:
-                rb->rbnext = acutBuildList(AcDb::kDxfXTextString, L"Test");
-                break;
-            case VARENUM::VT_I4:
-                rb->rbnext = acutBuildList(AcDb::kDxfInt32, 1);
-                break;
-            case VARENUM::VT_R8:
-                rb->rbnext = acutBuildList(AcDb::kDxfReal, 1.2);
-                break;
-            case VARENUM::VT_UI4:
-                rb->rbnext = acutBuildList(AcDb::kDxfInt64, 24);
-                break;
-            }
-        }
-    }*/
+        objects2properties.insert(std::pair<AcDbObjectId, std::map<GUID, VARIANT>>
+        {*id, {}});
+    }
+    std::map<GUID, VARIANT>* prop_values = &(objects2properties[*id]);
+    /*Проверяем коллекцию значений свойств для смены данного значения свойства*/
+    if (prop_values->find(*property_id) == prop_values->end())
+    {
+        prop_values->insert(std::pair<GUID, VARIANT>{*property_id,*data});
+    }
+    else prop_values->at(*property_id) = *data;
+
+}
+bool DynPropertiesManager::GetPropertyValue(AcDbObjectId* id,
+    GUID* property_id, VARIANT* data)
+{
+    if (objects2properties.find(*id) == objects2properties.end()) return false;
+    std::map<GUID, VARIANT>* prop_values = &(objects2properties[*id]);
+    if (prop_values->find(*property_id) == prop_values->end()) return false;
+    *data = prop_values->at(*property_id);
+    return true;
 }
