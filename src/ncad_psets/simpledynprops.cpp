@@ -35,8 +35,6 @@ ncrxEntryPoint(NcRx::AppMsgCode msg, void* pkt)
 		acrxDynamicLinker->unlockApplication(pkt);
         acrxDynamicLinker->registerAppMDIAware(pkt); 
         DynPropertiesManager::initialize();
-        acedRegCmds->addCommand(cstrCommandGroup,_T("_add_to_object"),_T("add_to_object"), ACRX_CMD_MODAL, 
-            DynPropertiesManager::AssignSingleDynPropertyToObject);
 		break;
 	case AcRx::kUnloadAppMsg:
         acedRegCmds->removeGroup(cstrCommandGroup);

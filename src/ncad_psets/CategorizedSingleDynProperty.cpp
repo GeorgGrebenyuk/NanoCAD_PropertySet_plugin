@@ -72,7 +72,7 @@ STDMETHODIMP CategorizedSingleDynProperty::GetCurrentValueData( /*in*/LONG_PTR o
 
     _variant_t for_data;
     bool is_value_present = 
-        DynPropertiesManager::GetPropertyValue(&objectID, &pr_id, &for_data);
+        DynPropertiesManager::GetPropertyValue(&id, &pr_id, &for_data);
     if (is_value_present)
     {
         ::VariantCopy(pVarData, &for_data);
@@ -125,7 +125,7 @@ STDMETHODIMP CategorizedSingleDynProperty::SetCurrentValueData( /*[in]*/LONG_PTR
         break;
     }
 
-    DynPropertiesManager::SetPropertyValue(&objectID, &pr_id, &setted_data);
+    DynPropertiesManager::SetPropertyValue(&id, &pr_id, &setted_data);
     //if the dynamic property is changed by some other
     if (m_pNotifySink != NULL)
         m_pNotifySink->OnChanged(this);

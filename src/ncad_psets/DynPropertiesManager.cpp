@@ -1,10 +1,9 @@
-
 #include "stdafx.h"
 #include "DynPropertiesManager.hpp"
 
 bool DynPropertiesManager::m_bInitialized = false;
 std::vector<CComObject<CategorizedSingleDynProperty>*>DynPropertiesManager::dyn_s_props{ };
-std::map<long long, std::map<GUID, _variant_t>> DynPropertiesManager::objects2properties;
+std::map<AcDbObjectId, std::map<GUID, _variant_t>> DynPropertiesManager::objects2properties;
 std::vector<BSTR> DynPropertiesManager::categories_names;
 
 AcRxClass* DynPropertiesManager::m_pClass = AcDbEntity::desc();
@@ -112,7 +111,7 @@ static bool operator<(const GUID& a, const GUID& b)
 {
     return (a.Data1 < b.Data1);
 }
-bool is_data_in_objects2properties(long long* id) {
+bool is_data_in_objects2properties(AcDbObjectId* id) {
     for (auto d : DynPropertiesManager::objects2properties)
     {
         if (d.first == *id) return true;
@@ -131,7 +130,7 @@ bool is_data_in_nested_map(GUID* id, std::map<GUID, _variant_t>* collection) {
     return false;
 }
 
-void DynPropertiesManager::SetPropertyValue(long long* id,
+void DynPropertiesManager::SetPropertyValue(AcDbObjectId* id,
     GUID* property_id, _variant_t* data)
 {
    /* VARIANT to_set;
@@ -160,7 +159,7 @@ void DynPropertiesManager::SetPropertyValue(long long* id,
     else objects2properties[*id].insert(std::make_pair(*property_id, *data));
 
 }
-bool DynPropertiesManager::GetPropertyValue(long long* id,
+bool DynPropertiesManager::GetPropertyValue(AcDbObjectId* id,
     GUID* property_id, _variant_t* data)
 {
     if (!is_data_in_objects2properties(id)) return false;

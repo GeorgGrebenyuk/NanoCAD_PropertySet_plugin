@@ -45,13 +45,15 @@ public:
 	static std::vector<CComObject<CategorizedSingleDynProperty>*> dyn_s_props;
 	//static std::map<GUID, int> props_id2index;
 	/*Сохранение объектных значений в процессе работы с чертежом*/
-	static std::map<long long, std::map<GUID, _variant_t>> objects2properties;
+	static std::map<AcDbObjectId, std::map<GUID, _variant_t>> objects2properties;
 	/*Запись значения свойства объекта в objects2properties*/
-	static void SetPropertyValue(long long* id, GUID* property_id, _variant_t* data);
+	static void SetPropertyValue(AcDbObjectId* id, GUID* property_id, _variant_t* data);
 	/*Получает значение свойства объекта из objects2properties*/
-	static bool GetPropertyValue(long long* id, GUID* property_id, _variant_t* data);
+	static bool GetPropertyValue(AcDbObjectId* id, GUID* property_id, _variant_t* data);
 
 	/*Функции импорта*/
+
+	/*Импорт определений свойств из текстового файла (ОТЛАДОЧНЫЙ МЕТОД)*/
 	static void ImportPropertiesByFile();
 };
 #endif
