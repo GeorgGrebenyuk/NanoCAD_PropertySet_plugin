@@ -166,13 +166,13 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(NCadSDK)\include;$(NCadSDK)\include\nrxgate;$(NCadSDK)\include\arxgate;$(NCadSDK)\include\MAPI;$(NCadSDK)\include-Win32\Drawing\ActiveX\OdaX;$(NCadSDK)\include-Win32\Drawing\ActiveX;$(NCadSDK)\include-Win32;$(NCadSDK)\include\Drawing\ActiveX;$(NCadSDK)\include\Drawing\include;$(NCadSDK)\include\Kernel\DevInclude\DbRoot;$(NCadSDK)\include\Kernel\DevInclude;$(NCadSDK)\include\Kernel\include;$(NCadSDK)\include\KernelBase\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
