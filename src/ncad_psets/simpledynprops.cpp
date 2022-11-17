@@ -24,7 +24,8 @@ END_OBJECT_MAP()
 //	return TRUE;    // ok
 //}
 
-const TCHAR* cstrCommandGroup = _T("ASDK_SIMPLEDYNPROPS");
+
+const TCHAR* cstrCommandGroup = _T("NCAD_PSETS");
 
 extern "C" __declspec(dllexport) NcRx::AppRetCode
 ncrxEntryPoint(NcRx::AppMsgCode msg, void* pkt)
@@ -35,7 +36,13 @@ ncrxEntryPoint(NcRx::AppMsgCode msg, void* pkt)
 		acrxDynamicLinker->unlockApplication(pkt);
         acrxDynamicLinker->registerAppMDIAware(pkt); 
         DynPropertiesManager::initialize();
-		break;
+		
+        acedRegCmds->addCommand(cstrCommandGroup,
+            _T("_NCAD_PSETS_LoadFromFile"),
+            _T("NCAD_PSETS_LoadFromFile"),
+            ACRX_CMD_MODAL,
+            DynPropertiesManager::ImportPropertiesByFile);
+        break;
 	case AcRx::kUnloadAppMsg:
         acedRegCmds->removeGroup(cstrCommandGroup);
         DynPropertiesManager::uninitialize();

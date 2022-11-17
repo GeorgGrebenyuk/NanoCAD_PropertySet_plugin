@@ -26,6 +26,7 @@ public:
 	static bool isInitialized() { return m_bInitialized; }
 	//DynPropertiesManager();
 	static AcRxClass* m_pClass;
+	static CComPtr<IPropertyManager>* p_prop_manager;
 	//static CComPtr<IPropertyManager>* p_prop_manager;
 	static void initialize();
 	static void uninitialize();

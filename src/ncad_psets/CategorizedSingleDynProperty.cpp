@@ -69,7 +69,7 @@ STDMETHODIMP CategorizedSingleDynProperty::GetCurrentValueData( /*in*/LONG_PTR o
     id.setFromOldId(objectID);
     GUID pr_id;
     this->GetGUID(&pr_id);
-
+    NcDbHandle h = id.handle();
     _variant_t for_data;
     bool is_value_present = 
         DynPropertiesManager::GetPropertyValue(&id, &pr_id, &for_data);
@@ -83,7 +83,7 @@ STDMETHODIMP CategorizedSingleDynProperty::GetCurrentValueData( /*in*/LONG_PTR o
         switch (this->p_valueType)
         {
         case VARENUM::VT_BSTR:
-            current_v = _variant_t(L"test1");
+            current_v = _variant_t(L"");
             break;
         case VARENUM::VT_I4:
             current_v = _variant_t(0);

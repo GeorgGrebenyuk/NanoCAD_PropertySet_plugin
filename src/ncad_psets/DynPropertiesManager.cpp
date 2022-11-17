@@ -18,7 +18,7 @@ void DynPropertiesManager::initialize()
         CComPtr<IPropertyManager> prop_manager;
         if ((prop_manager.p = GET_OPMPROPERTY_MANAGER(m_pClass)) == NULL)
             _com_issue_error(E_FAIL);
-        CreateSingleDynProperty(L"first_property", L"", VARENUM::VT_BSTR, L"Default Category");
+        //CreateSingleDynProperty(L"Objects_handle", L"", VARENUM::VT_BSTR, L"Default Category");
         //CreateSingleDynProperty(L"second_property", L"", VARENUM::VT_I4, L"Default Category 2");
         //CreateSingleDynProperty(L"third_property", L"", VARENUM::VT_R8, L"Default Category");
     }
@@ -61,6 +61,7 @@ void DynPropertiesManager::CreateSingleDynProperty(
     /*in*/BSTR category_name,
     /*in*/BSTR id)
 {
+    //category_name = L"Default Category";
     CComPtr<IPropertyManager> prop_manager;
     if ((prop_manager.p = GET_OPMPROPERTY_MANAGER(m_pClass)) == NULL)
         _com_issue_error(E_FAIL); 
@@ -105,6 +106,7 @@ void DynPropertiesManager::CreateSingleDynProperty(
     new_property->AddRef();
     _com_util::CheckError(prop_manager->AddProperty(new_property));
     dyn_s_props.push_back(new_property);
+    
 }
 
 static bool operator<(const GUID& a, const GUID& b)
