@@ -4,7 +4,8 @@
 
 bool DynPropertiesManager::m_bInitialized = false;
 std::vector<CComObject<CategorizedSingleDynProperty>*>DynPropertiesManager::dyn_s_props{ };
-std::map<AcDbObjectId, std::map<GUID, VARIANT>> DynPropertiesManager::objects2properties;
+std::map<long long, std::map<GUID, _variant_t>> DynPropertiesManager::objects2properties;
+std::vector<BSTR> DynPropertiesManager::categories_names;
 
 AcRxClass* DynPropertiesManager::m_pClass = AcDbEntity::desc();
 
@@ -19,8 +20,8 @@ void DynPropertiesManager::initialize()
         if ((prop_manager.p = GET_OPMPROPERTY_MANAGER(m_pClass)) == NULL)
             _com_issue_error(E_FAIL);
         CreateSingleDynProperty(L"first_property", L"", VARENUM::VT_BSTR, L"Default Category");
-        CreateSingleDynProperty(L"second_property", L"", VARENUM::VT_I4, L"Default Category");
-        CreateSingleDynProperty(L"third_property", L"", VARENUM::VT_R8, L"Default Category");
+        //CreateSingleDynProperty(L"second_property", L"", VARENUM::VT_I4, L"Default Category 2");
+        //CreateSingleDynProperty(L"third_property", L"", VARENUM::VT_R8, L"Default Category");
     }
     catch (const _com_error&)
     {
@@ -54,11 +55,13 @@ void DynPropertiesManager::uninitialize()
     }
 }
 
-void DynPropertiesManager::CreateSingleDynProperty(BSTR name, BSTR description, 
-    VARENUM type, BSTR category_name)
+void DynPropertiesManager::CreateSingleDynProperty(
+    /*in*/BSTR name,
+    /*in*/BSTR description,
+    /*in*/VARENUM type,
+    /*in*/BSTR category_name,
+    /*in*/BSTR id)
 {
-    category_name = L"Default Category";
-    //AcRxClass* m_pClass = AcDbEntity::desc();
     CComPtr<IPropertyManager> prop_manager;
     if ((prop_manager.p = GET_OPMPROPERTY_MANAGER(m_pClass)) == NULL)
         _com_issue_error(E_FAIL); 
@@ -66,96 +69,105 @@ void DynPropertiesManager::CreateSingleDynProperty(BSTR name, BSTR description,
     CComObject<CategorizedSingleDynProperty>* new_property = NULL;
     _com_util::CheckError(CComObject<CategorizedSingleDynProperty>::CreateInstance(&new_property));
 
-    new_property->set_name(name);
-    new_property->set_description(description);
-    new_property->set_type(type);
+    GUID guid;
+    HRESULT hr1 = CoCreateGuid(&guid);
+    if (id == NULL){
+        new_property->p_guid = guid;
+    }
+    else {
+        HRESULT hr2 = CLSIDFromString(id, (LPCLSID)&(new_property->p_guid));
+        if (hr2 != S_OK) {
+            new_property->p_guid = guid;
+        }
+    }
+    new_property->p_name = name;
+    new_property->p_description = description;
+    new_property->p_valueType = type;
+    new_property->p_CatName = category_name;
+
+    int cat_index = 1;
+    bool is_a = false;
+    for (int i = 0; i < categories_names.size(); i++)
+    {
+        if (0 == wcscmp(categories_names[i], category_name)) 
+        {
+            cat_index = i + 1;
+            is_a = true;
+            break;
+        }
+    }
+    if (!is_a) 
+    {
+        categories_names.push_back(category_name);
+        cat_index = categories_names.size();
+    }
+
+    new_property->p_Cat = cat_index;
     new_property->AddRef();
     _com_util::CheckError(prop_manager->AddProperty(new_property));
     dyn_s_props.push_back(new_property);
-    GUID id;
-    new_property->GetGUID(&id);
 }
 
-void DynPropertiesManager::AssignSingleDynPropertyToObject()
-{
-    if (!isInitialized())
-    {
-        acutPrintf(_T("\nThe dynamic properties failed to intialize. Command is disabled."));
-        return;
-    }
-    ads_name ss;
-    if (acedSSGet(NULL, NULL, NULL, NULL, ss) != RTNORM)
-        return;
-    long len = 0;
-    acedSSLength(ss, &len);
-    ads_name ent;
-    AcDbObjectId id;
-    for (long i = 0; i < len; i++) 
-    {
-        if (acedSSName(ss, i, ent) == RTNORM)
-        {
-            if (acdbGetObjectId(id, ent) == Acad::eOk)
-            {
-
-            }
-        }
-    }
-    ads_ssfree(ss);
-}
 static bool operator<(const GUID& a, const GUID& b)
 {
     return (a.Data1 < b.Data1);
 }
-//static bool operator<(const AcDbObjectId& a, const AcDbObjectId& b)
-//{
-//    return (a.asOldId() < b.asOldId());
-//}
-bool is_data_in_objects2properties(AcDbObjectId* id) {
+bool is_data_in_objects2properties(long long* id) {
     for (auto d : DynPropertiesManager::objects2properties)
     {
         if (d.first == *id) return true;
     }
     return false;
 }
-bool is_data_in_nested_map(GUID* id, std::map<GUID, VARIANT>* collection, VARIANT* data) {
+bool is_data_in_nested_map(GUID* id, std::map<GUID, _variant_t>* collection) {
     for (auto d : *collection)
     {
         if (d.first == *id) 
         {
-            *data = d.second;
+            //*data = d.second;
             return true;
         }
     }
     return false;
 }
 
-void DynPropertiesManager::SetPropertyValue(AcDbObjectId* id, 
-    GUID* property_id, VARIANT* data)
+void DynPropertiesManager::SetPropertyValue(long long* id,
+    GUID* property_id, _variant_t* data)
 {
+   /* VARIANT to_set;
+    switch (type)
+    {
+    case VT_BSTR:
+
+    }*/
     /*ѕровер€ем, имеетс€ ли в objects2properties запись дл€ данного объекта
     и если нет, создаем пустую запись. √лобальна€ цель -- получить вектор значений*/
     if (!is_data_in_objects2properties(id))
     {
-        std::map<GUID, VARIANT> setting_data;
+        std::map<GUID, _variant_t> setting_data;
         setting_data.insert({ *property_id, *data });
         objects2properties.insert(std::make_pair(*id, setting_data));
         setting_data.clear();        
         return;
     }
     /*ѕровер€ем коллекцию значений свойств дл€ перезаписи/установки данного значени€ свойства*/
-    if (is_data_in_nested_map(property_id, &objects2properties[*id], data))
+    if (is_data_in_nested_map(property_id, &objects2properties[*id]))
     {
-        //std::map<GUID, VARIANT> setting_data;
-        //setting_data.insert(std::make_pair(*property_id, *data));
-        objects2properties[*id].insert(std::make_pair(*property_id, * data));
+        //ќбновл€ем значени€ при наличии прежней записи
+        objects2properties[*id][*property_id] = *data;
     }
-    else objects2properties[*id][*property_id] = *data;
+    //”станавливаем значение, это нова€ запись
+    else objects2properties[*id].insert(std::make_pair(*property_id, *data));
 
 }
-bool DynPropertiesManager::GetPropertyValue(AcDbObjectId* id,
-    GUID* property_id, VARIANT* data)
+bool DynPropertiesManager::GetPropertyValue(long long* id,
+    GUID* property_id, _variant_t* data)
 {
     if (!is_data_in_objects2properties(id)) return false;
-    if (!is_data_in_nested_map(property_id, &(objects2properties[*id]), data)) return false;
+    if (!is_data_in_nested_map(property_id, &(objects2properties[*id]))) return false;
+    else
+    {
+        *data = objects2properties[*id][*property_id];
+    }
     return true;
 }

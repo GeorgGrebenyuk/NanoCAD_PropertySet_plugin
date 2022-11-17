@@ -46,14 +46,17 @@ public:
         /* [out] */ BSTR* pbstrName);
     CComPtr<IDynamicPropertyNotify> m_pNotifySink;
 
+    GUID p_guid;
+    //void set_guid(GUID guid);
+
     BSTR p_name;
-    void set_name(BSTR name);
+    //void set_name(BSTR name);
 
     BSTR p_description;
-    void set_description(BSTR desk);
+    //void set_description(BSTR desk);
 
     VARTYPE p_valueType;
-    void set_type(VARENUM type);
+    //void set_type(VARENUM type);
 
     //edit property
     PROPCAT p_Cat;

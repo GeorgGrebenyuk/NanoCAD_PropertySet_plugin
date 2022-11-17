@@ -34,19 +34,24 @@ public:
 		/*in*/BSTR name, 
 		/*in*/BSTR description, 
 		/*in*/VARENUM type,
-		/*in*/BSTR category_name);
-	/*Присвоение объекту модели свойств с выбором*/
-	static void AssignSingleDynPropertyToObject();
+		/*in*/BSTR category_name, 
+		/*in*/BSTR id = NULL);
+
 	//////////////
 	/*Контейнеры*/
 	//////////////
+	static std::vector<BSTR> categories_names;
+
 	static std::vector<CComObject<CategorizedSingleDynProperty>*> dyn_s_props;
 	//static std::map<GUID, int> props_id2index;
 	/*Сохранение объектных значений в процессе работы с чертежом*/
-	static std::map<AcDbObjectId, std::map<GUID, VARIANT>> objects2properties;
+	static std::map<long long, std::map<GUID, _variant_t>> objects2properties;
 	/*Запись значения свойства объекта в objects2properties*/
-	static void SetPropertyValue(AcDbObjectId* id, GUID* property_id, VARIANT* data);
+	static void SetPropertyValue(long long* id, GUID* property_id, _variant_t* data);
 	/*Получает значение свойства объекта из objects2properties*/
-	static bool GetPropertyValue(AcDbObjectId* id, GUID* property_id, VARIANT* data);
+	static bool GetPropertyValue(long long* id, GUID* property_id, _variant_t* data);
+
+	/*Функции импорта*/
+	static void ImportPropertiesByFile();
 };
 #endif

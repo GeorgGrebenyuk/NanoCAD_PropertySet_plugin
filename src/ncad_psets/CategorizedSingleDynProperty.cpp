@@ -2,7 +2,7 @@
 
 #include "CategorizedSingleDynProperty.hpp"
 #include "DynPropertiesManager.hpp"
-
+#include <sstream>
 ////////////////////////////
 CategorizedSingleDynProperty::CategorizedSingleDynProperty()
     :p_Cat(1), p_CatName(L"Default Category"), p_name(L"RootProperty"), p_description(L""),
@@ -12,6 +12,7 @@ CategorizedSingleDynProperty::CategorizedSingleDynProperty()
 }
 STDMETHODIMP CategorizedSingleDynProperty::GetGUID( /*[out]*/GUID* propGUID)
 {
+    *propGUID = p_guid;
     return E_NOTIMPL;
 }
 STDMETHODIMP CategorizedSingleDynProperty::GetDisplayName( /*[out]*/BSTR* pBstrName)
@@ -68,11 +69,13 @@ STDMETHODIMP CategorizedSingleDynProperty::GetCurrentValueData( /*in*/LONG_PTR o
     id.setFromOldId(objectID);
     GUID pr_id;
     this->GetGUID(&pr_id);
+
+    _variant_t for_data;
     bool is_value_present = 
-        DynPropertiesManager::GetPropertyValue(&id, &pr_id, pVarData);
+        DynPropertiesManager::GetPropertyValue(&objectID, &pr_id, &for_data);
     if (is_value_present)
     {
-        //all right
+        ::VariantCopy(pVarData, &for_data);
     }
     else
     {
@@ -80,16 +83,13 @@ STDMETHODIMP CategorizedSingleDynProperty::GetCurrentValueData( /*in*/LONG_PTR o
         switch (this->p_valueType)
         {
         case VARENUM::VT_BSTR:
-            current_v = _variant_t(L"");
+            current_v = _variant_t(L"test1");
             break;
         case VARENUM::VT_I4:
             current_v = _variant_t(0);
             break;
         case VARENUM::VT_R8:
             current_v = _variant_t(0.0);
-            break;
-        case VARENUM::VT_UI4:
-            current_v = _variant_t(0);
             break;
         }
         ::VariantCopy(pVarData, &_variant_t(current_v));
@@ -103,10 +103,29 @@ STDMETHODIMP CategorizedSingleDynProperty::SetCurrentValueData( /*[in]*/LONG_PTR
 {
     AcDbObjectId id;
     id.setFromOldId(objectID);
+
     //is_value_assigned = true;
     GUID pr_id;
     this->GetGUID(&pr_id);
-    DynPropertiesManager::SetPropertyValue(&id, &pr_id, &(VARIANT)varData);
+
+    _variant_t setted_data;
+    switch (this->p_valueType)
+    {
+    case VT_BSTR:
+        setted_data = _variant_t(V_BSTR(&varData));
+        break;
+    case VT_I4:
+        setted_data = _variant_t(V_I4(&varData));
+        break;
+    case VT_R8:
+        setted_data = _variant_t(V_R8(&varData));
+        break;
+    case VT_UI4:
+        setted_data = _variant_t(V_UI4(&varData));
+        break;
+    }
+
+    DynPropertiesManager::SetPropertyValue(&objectID, &pr_id, &setted_data);
     //if the dynamic property is changed by some other
     if (m_pNotifySink != NULL)
         m_pNotifySink->OnChanged(this);
@@ -126,19 +145,6 @@ STDMETHODIMP CategorizedSingleDynProperty::Disconnect()
     m_pNotifySink.Release();
     return S_OK;
 }
-void CategorizedSingleDynProperty::set_name(BSTR name)
-{
-    this->p_name = name;
-
-}
-void CategorizedSingleDynProperty::set_type(VARENUM type)
-{
-    this->p_valueType = type;
-}
-void CategorizedSingleDynProperty::set_description(BSTR desk)
-{
-    this->p_description = desk;
-}
 
 STDMETHODIMP CategorizedSingleDynProperty::MapPropertyToCategory(
     /* [in]  */ DISPID dispid,
@@ -146,7 +152,7 @@ STDMETHODIMP CategorizedSingleDynProperty::MapPropertyToCategory(
 {
     if (pPropCat == NULL)
         return E_POINTER;
-    *pPropCat = 1;
+    *pPropCat = p_Cat;
     return S_OK;
 }
 STDMETHODIMP CategorizedSingleDynProperty::GetCategoryName(
@@ -156,8 +162,9 @@ STDMETHODIMP CategorizedSingleDynProperty::GetCategoryName(
 {
     if (pBstrName == NULL)
         return E_POINTER;
-    if (propcat != 1)
-        return E_FAIL;
-    *pBstrName = ::SysAllocString(L"Default Category");
+    //if (propcat != 1)
+    //    return E_FAIL;
+    //*pBstrName = ::SysAllocString(L"Default Category");
+    *pBstrName = ::SysAllocString(p_CatName);
     return S_OK;
 }
