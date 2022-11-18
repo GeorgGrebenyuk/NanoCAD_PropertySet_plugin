@@ -1,64 +1,19 @@
 #include "stdafx.h"
 #include "DynPropertiesManager.hpp"
 
-bool DynPropertiesManager::m_bInitialized = false;
+
 std::vector<CComObject<CategorizedSingleDynProperty>*>DynPropertiesManager::dyn_s_props{ };
 std::map<AcDbObjectId, std::map<GUID, _variant_t>> DynPropertiesManager::objects2properties;
 std::vector<BSTR> DynPropertiesManager::categories_names;
 
 AcRxClass* DynPropertiesManager::m_pClass = AcDbEntity::desc();
 
-void DynPropertiesManager::initialize()
-{
-    if (m_bInitialized)
-        return;
-    m_bInitialized = true;
-    try
-    {
-        CComPtr<IPropertyManager> prop_manager;
-        if ((prop_manager.p = GET_OPMPROPERTY_MANAGER(m_pClass)) == NULL)
-            _com_issue_error(E_FAIL);
-        //CreateSingleDynProperty(L"Objects_handle", L"", VARENUM::VT_BSTR, L"Default Category");
-        //CreateSingleDynProperty(L"second_property", L"", VARENUM::VT_I4, L"Default Category 2");
-        //CreateSingleDynProperty(L"third_property", L"", VARENUM::VT_R8, L"Default Category");
-    }
-    catch (const _com_error&)
-    {
-        uninitialize();
-        acutPrintf(_T("\nSimpleDynProps: initialize failed!!!\n"));
-        return;
-    }
-}
-void DynPropertiesManager::uninitialize()
-{
-    if (!m_bInitialized)
-        return;
-    m_bInitialized = false;
-    try
-    {
-        CComPtr<IPropertyManager> prop_manager;
-        if ((prop_manager.p = GET_OPMPROPERTY_MANAGER(m_pClass)) == NULL)
-            _com_issue_error(E_FAIL);
-        for (auto cat_props : dyn_s_props)
-        {
-            if (cat_props)
-            {
-                _com_util::CheckError(prop_manager->RemoveProperty(cat_props));
-                cat_props->Release();
-            } 
-        }
-    }
-    catch (const _com_error&)
-    {
-        acutPrintf(_T("\nSimpleDynProps: uninitialize failed!!!\n"));
-    }
-}
-
 void DynPropertiesManager::CreateSingleDynProperty(
     /*in*/BSTR name,
     /*in*/BSTR description,
     /*in*/VARENUM type,
     /*in*/BSTR category_name,
+    /*in*/std::vector<BSTR> class_names,
     /*in*/BSTR id)
 {
     //category_name = L"Default Category";
@@ -84,6 +39,7 @@ void DynPropertiesManager::CreateSingleDynProperty(
     new_property->p_description = description;
     new_property->p_valueType = type;
     new_property->p_CatName = category_name;
+    new_property->p_class_names = class_names;
 
     int cat_index = 1;
     bool is_a = false;

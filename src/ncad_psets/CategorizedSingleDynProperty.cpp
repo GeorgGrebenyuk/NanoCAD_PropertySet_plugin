@@ -2,7 +2,8 @@
 
 #include "CategorizedSingleDynProperty.hpp"
 #include "DynPropertiesManager.hpp"
-#include <sstream>
+//#include <sstream>
+#include "aux_functions.h"
 ////////////////////////////
 CategorizedSingleDynProperty::CategorizedSingleDynProperty()
     :p_Cat(1), p_CatName(L"Default Category"), p_name(L"RootProperty"), p_description(L""),
@@ -29,8 +30,33 @@ STDMETHODIMP CategorizedSingleDynProperty::IsPropertyEnabled( /*[in]*/LONG_PTR o
         return E_POINTER;
     AcDbObjectId id;
     id.setFromOldId(objectID);
-    //*pbEnabled = XRecordManager::isDataPresent(id) ? TRUE : FALSE;
     *pbEnabled = TRUE;
+    //NcDbHandle h = id.handle();
+    //
+    //acutPrintf(_T("\nHANDLE = %s"), id.handle());
+    /*Свойство будет отображаться, если имя класса находиться 
+    в перечне разрешенных p_class_names*/
+    //try {
+
+    //}
+    //catch (const _com_error&)
+    //{
+    //    acutPrintf(_T("\n failed!!!\n"));
+    //}
+    BSTR class_name = ::SysAllocString(id.objectClass()->name());
+
+    if (!this->p_class_names.empty())
+    {
+        for (auto class_name : this->p_class_names)
+        {
+            if (class_name != NULL)
+            {
+                if (0 == wcscmp(class_name, class_name)) *pbEnabled = FALSE;
+            }
+
+        }
+    }
+    
     return S_OK;
 }
 STDMETHODIMP CategorizedSingleDynProperty::IsPropertyReadOnly( /*[out]*/BOOL* pbReadonly)
@@ -69,7 +95,7 @@ STDMETHODIMP CategorizedSingleDynProperty::GetCurrentValueData( /*in*/LONG_PTR o
     id.setFromOldId(objectID);
     GUID pr_id;
     this->GetGUID(&pr_id);
-    NcDbHandle h = id.handle();
+    //NcDbHandle h = id.handle();
     _variant_t for_data;
     bool is_value_present = 
         DynPropertiesManager::GetPropertyValue(&id, &pr_id, &for_data);

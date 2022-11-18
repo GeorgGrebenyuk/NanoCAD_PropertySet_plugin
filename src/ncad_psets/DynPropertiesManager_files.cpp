@@ -5,8 +5,7 @@
 #include <sstream>
 #include <string>
 
-#include <AtlBase.h>
-#include <atlconv.h>
+#include "aux_functions.h"
 
 void DynPropertiesManager::ImportPropertiesByFile() {
 	ACHAR file_path[256];
@@ -31,10 +30,8 @@ void DynPropertiesManager::ImportPropertiesByFile() {
                         if (line[i] == ',')
                         {
                             std::string part = line.substr(last_pos, i - last_pos);
-
-                            CA2W ca2w(part.c_str());
-                            std::wstring wide = ca2w;
-                            auto m = ::SysAllocString(wide.c_str());
+                            auto m = ::SysAllocString(aux_functions::
+                                ToWStringFromString(part.c_str()).c_str());
                             str_data.push_back(m);
                             //delete[] cstr;
                             last_pos = i + 1;
@@ -62,11 +59,17 @@ void DynPropertiesManager::ImportPropertiesByFile() {
 
                     
                     //CreateSingleDynProperty(prop_name, prop_desc, type, prop_cat_name);
-                    CreateSingleDynProperty(str_data[0], str_data[1], type, str_data[3]);
+                    CreateSingleDynProperty(str_data[0], str_data[1], type, str_data[3], {}, NULL);
                 }
             }
         }
         file_data.close();
 
 	}
+}
+void DynPropertiesManager::LoadPropertiesAndValuesFromFile() {
+
+}
+void DynPropertiesManager::SavePropertiesAndValueToFile() {
+
 }

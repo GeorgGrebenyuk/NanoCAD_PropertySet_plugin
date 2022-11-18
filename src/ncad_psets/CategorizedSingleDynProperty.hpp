@@ -60,7 +60,9 @@ public:
 
     //edit property
     PROPCAT p_Cat;
-    _bstr_t p_CatName;
+    BSTR p_CatName;
+
+    std::vector<BSTR> p_class_names;
 
     //bool is_value_assigned = false;
 };

@@ -14,33 +14,27 @@
 
 #include "CategorizedSingleDynProperty.hpp"
 
-//CComModule _Module;
-//
-//BEGIN_OBJECT_MAP(ObjectMap)
-//END_OBJECT_MAP()
-
 class DynPropertiesManager
 {
-	static bool m_bInitialized;
 public:
-	static bool isInitialized() { return m_bInitialized; }
 	//DynPropertiesManager();
 	static AcRxClass* m_pClass;
-	static CComPtr<IPropertyManager>* p_prop_manager;
 	//static CComPtr<IPropertyManager>* p_prop_manager;
-	static void initialize();
-	static void uninitialize();
+	//static CComPtr<IPropertyManager>* p_prop_manager;
+
+
 	/*Создание нового свойства с одиночным значением*/
 	static void CreateSingleDynProperty(
-		/*in*/BSTR name, 
-		/*in*/BSTR description, 
+		/*in*/BSTR name,
+		/*in*/BSTR description,
 		/*in*/VARENUM type,
-		/*in*/BSTR category_name, 
-		/*in*/BSTR id = NULL);
+		/*in*/BSTR category_name,
+		/*in*/std::vector<BSTR> class_names,
+		/*in*/BSTR id);
 
-	//////////////
+	//////////////////////////////////////////////////////////////////////////////////////
 	/*Контейнеры*/
-	//////////////
+	//////////////////////////////////////////////////////////////////////////////////////
 	static std::vector<BSTR> categories_names;
 
 	static std::vector<CComObject<CategorizedSingleDynProperty>*> dyn_s_props;
@@ -52,9 +46,17 @@ public:
 	/*Получает значение свойства объекта из objects2properties*/
 	static bool GetPropertyValue(AcDbObjectId* id, GUID* property_id, _variant_t* data);
 
+	//////////////////////////////////////////////////////////////////////////////////////
 	/*Функции импорта*/
+	//////////////////////////////////////////////////////////////////////////////////////
+	/*Загрузка свойств и и их значений из внешнего файла*/
+	static void LoadPropertiesAndValuesFromFile();
+
+	/*Запись свойств и их значений в файл*/
+	static void SavePropertiesAndValueToFile();
 
 	/*Импорт определений свойств из текстового файла (ОТЛАДОЧНЫЙ МЕТОД)*/
 	static void ImportPropertiesByFile();
+
 };
 #endif
