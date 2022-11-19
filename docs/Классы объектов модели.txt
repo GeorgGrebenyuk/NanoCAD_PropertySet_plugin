@@ -1,0 +1,17 @@
+NcDbMText,МТекст
+NcDbRegion,Регион (область)
+NcDbSpline,Сплайн
+NcDbCircle,Круг
+NcDb3dPolyline,3д-полилиния
+NcDb2dPolyline,2д-полилиния
+NcDbPolyline,Полилиния
+NcDbLine,Отрезок
+NcDbPoint,Точка
+NcDbArc,Дуга
+NcDbRay,Кольцо
+NcDbEllipse,Эллипс
+NcDbText,Текст
+NcDbHatch,Штриховка
+NcDbSolid,Солид
+NcDbTrace,Траса
+NcDbFace,Грань
