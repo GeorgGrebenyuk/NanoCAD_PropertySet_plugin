@@ -2,51 +2,66 @@
 //
 
 #include <iostream>
-#include <json.hpp>
-using json = nlohmann::json;
+#include "tinyxml2.h"
+#include <fstream>
+#include "vector"
+#include "sstream"
+#include "string"
+//using json = nlohmann::json;
+using namespace tinyxml2;
 
-json get_property(
-    std::wstring name,
-    std::wstring desc,
-    std::wstring type,
-    std::wstring category,
-    std::wstring id,
-    std::wstring def_value,
-    std::vector<std::wstring> object_classes)
+/// <summary>
+/// Сохранение в файл данных о динамичесском свойстве
+/// </summary>
+void create_property(XMLDocument* doc, XMLElement* prop_list,
+    std::string name,
+    std::string desc,
+    std::string type,
+    std::string category,
+    std::string id,
+    std::string def_value,
+    std::vector<std::string> object_classes)
 {
-    json prop_def;
-    prop_def["name"] = name;
-    prop_def["description"] = desc;
-    prop_def["type"] = type;
-    prop_def["category"] = category;
-    prop_def["id"] = id;
-    prop_def["default_value"] = def_value;
+    XMLElement* prop_def = doc->NewElement("property");
+    
+    prop_def->SetAttribute("name", name.c_str());
+    prop_def->SetAttribute("description", desc.c_str());
+    prop_def->SetAttribute("type", type.c_str());
+    prop_def->SetAttribute("category", category.c_str());
+    prop_def->SetAttribute("id", id.c_str());
+    prop_def->SetAttribute("default_value", def_value.c_str());
 
+    std::stringstream ss;
+    for (auto o_class : object_classes) { ss << o_class << ";"; }
+    prop_def->SetAttribute("to_classes", ss.str().c_str());
 
+    //prop_list->InsertNewChildElement("property");
+    prop_list->InsertEndChild(prop_def);
 }
-void json_work() {
-    json root;
-    /*meta data*/
-    json meta;
-    meta["project_name"] = "default";
-    meta["project_name"] = "default";
-    /*properties info*/
-    root["metadata"] = meta;
-    json props_list;
-    json prop1 = get_property(L"RUS_Имя", L"", L"string", L"RUS", L"", L"");
-    json prop2 = get_property(L"RUS_Тип", L"", L"string", L"RUS", L"", L"");
-    json prop3 = get_property(L"RUS_Количество", L"", L"int", L"RUS", L"", L"");
-    props_list.push_back(prop1);
-    props_list.push_back(prop2);
-    props_list.push_back(prop3);
 
-    root["properties"] = props_list;
-    /*info about assigned objects*/
-    json assigned_objects;
+void xml_work() {
+
+    XMLDocument doc = new XMLDocument();
+    XMLElement* root = doc.NewElement("psets_info");
+    
+    /*meta data*/
+    XMLElement* meta = root->InsertNewChildElement("metadata");
+    XMLElement* project_info = meta->InsertNewChildElement("project_info");
+    project_info->SetAttribute("project_name", "Drawing1");
+    //project_info->SetAttribute("save_time", "19.11.2022 18:46");
+    //project_info->SetAttribute("hash_sum", "6050C47ADB62DFE5");
+    /*properties info*/
+    XMLElement* props_list = root->InsertNewChildElement("properties_info");
+    create_property(&doc, props_list, "RUS_Имя", "", "string", "RUS", "", "", { "NcDbPoint", "NcDbLine" });
+    create_property(&doc, props_list, "RUS_Количество", "", "int", "RUS", "", "0", { "NcDbPoint", "NcDbLine" });
+    
+    doc.InsertFirstChild(root);
+    doc.SaveFile("test_psets.xml");
 }
 int main()
 {
-    json_work();
+    setlocale(LC_ALL, "");
+    xml_work();
     std::cout << "\nEnd!";
     return 1;
 }
