@@ -67,9 +67,42 @@ void DynPropertiesManager::ImportPropertiesByFile() {
 
 	}
 }
+void DynPropertiesManager::WritePropsToConsole()
+{
+}
 void DynPropertiesManager::LoadPropertiesAndValuesFromFile() {
 
 }
+#include <fstream>
+#include <sstream>
 void DynPropertiesManager::SavePropertiesAndValueToFile() {
 
+    //static std::map<AcDbObjectId, std::map<GUID, _variant_t>> objects2properties;
+    for (auto r : objects2properties)
+    {
+        NcDbHandle handle = r.first.handle();
+        NCHAR buffer;
+        bool ckech_succ = handle.getIntoAsciiBuffer(&buffer, 16);
+        //acutPrintf(_T("\nhandle = %s"), buffer);
+
+        std::stringstream ss;
+        ss << buffer << std::endl;
+
+        std::ofstream out;          // поток для записи
+        out.open("E:\\Temp\\handle.txt"); // окрываем файл для записи
+        if (out.is_open())
+        {
+            out << ss.str();
+        }
+        out.close();
+
+        acutPrintf(_T("\nОбъектный идентфикатор = %s"), ss.str().c_str());
+        //for (auto r2 : r.second)
+        //{
+        //    OLECHAR* guidString;
+        //    ::StringFromCLSID(r2.first, &guidString);
+
+        //    acutPrintf(_T("\nИдентификатор свойства %s, значение свойства %s"), guidString, r2.second.bstrVal);
+        //}
+    }
 }

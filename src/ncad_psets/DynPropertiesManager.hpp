@@ -58,5 +58,7 @@ public:
 	/*Импорт определений свойств из текстового файла (ОТЛАДОЧНЫЙ МЕТОД)*/
 	static void ImportPropertiesByFile();
 
+	static void WritePropsToConsole();
+
 };
 #endif
