@@ -41,6 +41,11 @@ ncrxEntryPoint(NcRx::AppMsgCode msg, void* pkt)
             _T("NCAD_PSETS_LoadFromFile"),
             ACRX_CMD_MODAL,
             DynPropertiesManager::ImportPropertiesByFile);
+        acedRegCmds->addCommand(cstrCommandGroup,
+            _T("_NCAD_PSETS_WriteInfo"),
+            _T("NCAD_PSETS_WriteInfo"),
+            ACRX_CMD_MODAL,
+            DynPropertiesManager::SavePropertiesAndValueToFile);
         break;
 	case AcRx::kUnloadAppMsg:
         acedRegCmds->removeGroup(cstrCommandGroup);
