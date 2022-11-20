@@ -1,6 +1,6 @@
 <psets_info>
     <metadata>
-        <project_info project_name="Drawing1" save_time="19.11.2022 18:46" hash_sum="6050C47ADB62DFE5"/>
+        <project_info project_name="Drawing1"/>
     </metadata>
     <properties_info>
         <property name="RUS_Èìÿ" description="" type="string" category="RUS" id="" default_value="" to_classes="NcDbPoint;NcDbLine;"/>
