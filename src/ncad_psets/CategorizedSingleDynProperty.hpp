@@ -47,24 +47,13 @@ public:
     CComPtr<IDynamicPropertyNotify> m_pNotifySink;
 
     GUID p_guid;
-    //void set_guid(GUID guid);
-
     BSTR p_name;
-    //void set_name(BSTR name);
-
     BSTR p_description;
-    //void set_description(BSTR desk);
-
     VARTYPE p_valueType;
-    //void set_type(VARENUM type);
-
-    //edit property
+    VARIANT p_default_value;
     PROPCAT p_Cat;
     BSTR p_CatName;
-
     std::vector<BSTR> p_class_names;
-
-    //bool is_value_assigned = false;
 };
 #endif
 

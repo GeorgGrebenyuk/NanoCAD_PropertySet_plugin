@@ -16,6 +16,9 @@
     <Filter Include="Props">
       <UniqueIdentifier>{09f74051-2cba-4a4f-b1ff-210dcbb1f187}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ExternalLibs">
+      <UniqueIdentifier>{03d16cc4-6877-458b-be3b-8e19e4868ad7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

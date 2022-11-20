@@ -116,7 +116,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>E:\Downloads\tinyxml2-9.0.0</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\30_Coding\Libs\tinyxml2-9.0.0</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,7 +133,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>E:\Downloads\tinyxml2-9.0.0</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,11 +146,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="E:\Downloads\tinyxml2-9.0.0\tinyxml2.cpp" />
+    <ClCompile Include="E:\30_Coding\Libs\tinyxml2-9.0.0\tinyxml2.cpp" />
     <ClCompile Include="test_json.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="E:\Downloads\tinyxml2-9.0.0\tinyxml2.h" />
+    <ClInclude Include="E:\30_Coding\Libs\tinyxml2-9.0.0\tinyxml2.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

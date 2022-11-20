@@ -20,6 +20,18 @@ public:
 	/*Версия данного исходного кода (для будущих включений в другой код)*/
 	const BSTR version = L"1.0.0";
 	static AcRxClass* m_pClass;
+	//////////////////////////////////////////////////////////////////////////////////////
+	/*Функции со стороны пользователя (остальное позже спрятать в protected)*/
+	//////////////////////////////////////////////////////////////////////////////////////
+	static void CreateIntegerDynProperty(std::string Name, std::string Description, 
+		std::string CategoryName, std::vector<std::string> class_names, std::string Guid, int DefaultValue);
+	static void CreateRealDynProperty(std::string Name, std::string Description,
+		std::string CategoryName, std::vector<std::string> class_names, std::string Guid, double DefaultValue);
+	static void CreateStringDynProperty(std::string Name, std::string Description,
+		std::string CategoryName, std::vector<std::string> class_names, std::string Guid, std::string DefaultValue);
+	//////////////////////////////////////////////////////////////////////////////////////
+	/*Внутренние функции*/
+	//////////////////////////////////////////////////////////////////////////////////////
 	/*Создание нового свойства с одиночным значением*/
 	static void CreateSingleDynProperty(
 		/*in*/BSTR name,

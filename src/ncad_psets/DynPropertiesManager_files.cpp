@@ -5,6 +5,10 @@
 #include <sstream>
 #include <string>
 
+#include <tinyxml2.h>
+namespace xml = tinyxml2;
+#pragma warning(disable: 2038)
+
 #include "aux_functions.h"
 
 void DynPropertiesManager::ImportPropertiesByFile() {
@@ -70,39 +74,103 @@ void DynPropertiesManager::ImportPropertiesByFile() {
 void DynPropertiesManager::WritePropsToConsole()
 {
 }
-void DynPropertiesManager::LoadPropertiesAndValuesFromFile() {
+void DynPropertiesManager::LoadPropertiesAndValuesFromFile() 
+{
 
 }
-#include <fstream>
-#include <sstream>
-void DynPropertiesManager::SavePropertiesAndValueToFile() {
+//////////////////////////////////////////////////////////////////////////////////////
+/*Для сохранения свойства*/
+//////////////////////////////////////////////////////////////////////////////////////
 
-    //static std::map<AcDbObjectId, std::map<GUID, _variant_t>> objects2properties;
-    for (auto r : objects2properties)
+void xml_create_property(xml::XMLDocument* doc, xml::XMLElement* prop_list,
+    CComObject<CategorizedSingleDynProperty>* prop)
+{
+    xml::XMLElement* prop_def = doc->NewElement("property");
+
+    prop_def->SetAttribute("name", prop->p_name);
+    prop_def->SetAttribute("description", prop->p_description);
+    prop_def->SetAttribute("type", prop->p_valueType);
+    prop_def->SetAttribute("category", prop->p_CatName);
+    OLECHAR* guidString;
+    HRESULT hr = StringFromCLSID(prop->p_guid, &guidString);
+    prop_def->SetAttribute("id", guidString);
+    switch (prop->p_valueType)
     {
-        NcDbHandle handle = r.first.handle();
+    case VT_I4:  
+        prop_def->SetAttribute("default_value", prop->p_default_value.intVal);
+        break;
+    case VT_R8:
+        prop_def->SetAttribute("default_value", prop->p_default_value.fltVal);
+        break;
+    case VT_BSTR:
+        prop_def->SetAttribute("default_value", prop->p_default_value.bstrVal);
+        break;
+    }
+    std::stringstream ss;
+    for (auto o_class : prop->p_class_names) { ss << o_class << ";"; }
+    prop_def->SetAttribute("to_classes", ss.str().c_str());
+    prop_list->InsertEndChild(prop_def);
+}
+void DynPropertiesManager::SavePropertiesAndValueToFile() 
+{
+    //stringstream ss;
+    xml::XMLDocument doc = new xml::XMLDocument();
+    tinyxml2::XMLElement* root = doc.NewElement("psets_info");
+    /*metadata*/
+    xml::XMLElement* meta = root->InsertNewChildElement("metadata");
+    xml::XMLElement* project_info = meta->InsertNewChildElement("project_info");
+
+    AcApDocument* doc_model = acDocManager->curDocument();
+    const NCHAR* path = doc_model->fileName();
+    auto cdoc = doc_model->cDoc();
+
+    project_info->SetAttribute("project_name", path);
+
+    /*properties info*/
+    std::map<std::wstring, VARTYPE> props2types;
+    xml::XMLElement* props_list = root->InsertNewChildElement("properties_info");
+    for (auto s_dyn_property : dyn_s_props)
+    {
+        xml_create_property(&doc, props_list, s_dyn_property);
+        OLECHAR* guidString;
+        HRESULT hr = StringFromCLSID(s_dyn_property->p_guid, &guidString);
+        props2types.insert({ guidString, s_dyn_property->p_valueType });
+    }
+    //list properties
+
+    /*values of objects*/
+    xml::XMLElement* props_values = root->InsertNewChildElement("properties_values");
+    for (auto o_info : objects2properties) {
+        NcDbHandle handle = o_info.first.handle();
         NCHAR buffer;
         bool ckech_succ = handle.getIntoAsciiBuffer(&buffer, 16);
-        //acutPrintf(_T("\nhandle = %s"), buffer);
 
-        std::stringstream ss;
-        ss << buffer << std::endl;
-
-        std::ofstream out;          // поток для записи
-        out.open("E:\\Temp\\handle.txt"); // окрываем файл для записи
-        if (out.is_open())
+        xml::XMLElement* object_def = props_values->InsertNewChildElement("object");
+        object_def->SetAttribute("handle", buffer);
+        for (auto o_info_value : o_info.second)
         {
-            out << ss.str();
+            OLECHAR* guidString;
+            HRESULT hr = StringFromCLSID(o_info_value.first, &guidString);
+            stringstream ss;
+            ss << guidString;
+            VARTYPE prop_type = props2types[guidString];
+            switch (prop_type) {
+            case VT_I4:
+                object_def->SetAttribute(ss.str().c_str(), o_info_value.second.intVal);
+                break;
+            case VT_R8:
+                object_def->SetAttribute(ss.str().c_str(), o_info_value.second.fltVal);
+                break;
+            case VT_BSTR:
+                object_def->SetAttribute(ss.str().c_str(), o_info_value.second.bstrVal);
+                break;
+            }
         }
-        out.close();
-
-        acutPrintf(_T("\nОбъектный идентфикатор = %s"), ss.str().c_str());
-        //for (auto r2 : r.second)
-        //{
-        //    OLECHAR* guidString;
-        //    ::StringFromCLSID(r2.first, &guidString);
-
-        //    acutPrintf(_T("\nИдентификатор свойства %s, значение свойства %s"), guidString, r2.second.bstrVal);
-        //}
     }
+
+
+    /*saving and writing to file*/
+    doc.InsertFirstChild(root);
+    auto save_path = aux_functions::GetTempXmlSavePath();
+    doc.SaveFile(save_path.c_str());
 }
