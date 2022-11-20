@@ -7,9 +7,12 @@
 
 #include <tinyxml2.h>
 namespace xml = tinyxml2;
-#pragma warning(disable: 2038)
 
 #include "aux_functions.h"
+#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+#include <experimental/filesystem>
+
+namespace fs = std::experimental::filesystem;
 
 void DynPropertiesManager::ImportPropertiesByFile() {
 	ACHAR file_path[256];
@@ -87,33 +90,25 @@ void xml_create_property(xml::XMLDocument* doc, xml::XMLElement* prop_list,
 {
     xml::XMLElement* prop_def = doc->NewElement("property");
 
-    prop_def->SetAttribute("name", prop->p_name);
-    prop_def->SetAttribute("description", prop->p_description);
+    prop_def->SetAttribute("name", aux_functions::ToStringFromBSTR( prop->p_name).c_str());
+    prop_def->SetAttribute("description", aux_functions::ToStringFromBSTR(prop->p_description).c_str());
     prop_def->SetAttribute("type", prop->p_valueType);
-    prop_def->SetAttribute("category", prop->p_CatName);
-    OLECHAR* guidString;
-    HRESULT hr = StringFromCLSID(prop->p_guid, &guidString);
-    prop_def->SetAttribute("id", guidString);
-    switch (prop->p_valueType)
-    {
-    case VT_I4:  
-        prop_def->SetAttribute("default_value", prop->p_default_value.intVal);
-        break;
-    case VT_R8:
-        prop_def->SetAttribute("default_value", prop->p_default_value.fltVal);
-        break;
-    case VT_BSTR:
-        prop_def->SetAttribute("default_value", prop->p_default_value.bstrVal);
-        break;
-    }
+    prop_def->SetAttribute("category", aux_functions::ToStringFromBSTR(prop->p_CatName).c_str());
+    /*OLECHAR* guidString;
+    HRESULT hr = StringFromCLSID(prop->p_guid, &guidString);*/
+    prop_def->SetAttribute("id", aux_functions::ToStringFromGuid(prop->p_guid).c_str());
+    
     std::stringstream ss;
-    for (auto o_class : prop->p_class_names) { ss << o_class << ";"; }
+    for (auto o_class : prop->p_class_names) { ss << aux_functions::ToStringFromBSTR(o_class) << ";"; }
     prop_def->SetAttribute("to_classes", ss.str().c_str());
     prop_list->InsertEndChild(prop_def);
 }
 void DynPropertiesManager::SavePropertiesAndValueToFile() 
 {
-    //stringstream ss;
+    //stringstream ss;  
+    const std::locale ru_loc = std::locale("ru_RU.UTF-8");
+    const std::locale en_loc = std::locale("en_US.UTF-8");
+
     xml::XMLDocument doc = new xml::XMLDocument();
     tinyxml2::XMLElement* root = doc.NewElement("psets_info");
     /*metadata*/
@@ -122,19 +117,18 @@ void DynPropertiesManager::SavePropertiesAndValueToFile()
 
     AcApDocument* doc_model = acDocManager->curDocument();
     const NCHAR* path = doc_model->fileName();
-    auto cdoc = doc_model->cDoc();
-
-    project_info->SetAttribute("project_name", path);
+    
+    std::string p0 = aux_functions::ToStringFromWString(path, ru_loc);
+    //std::string converted_str = converter.to_bytes(path);
+    project_info->SetAttribute("project_name", p0.c_str());
 
     /*properties info*/
-    std::map<std::wstring, VARTYPE> props2types;
+    std::map<std::string, VARTYPE> props2types;
     xml::XMLElement* props_list = root->InsertNewChildElement("properties_info");
     for (auto s_dyn_property : dyn_s_props)
     {
         xml_create_property(&doc, props_list, s_dyn_property);
-        OLECHAR* guidString;
-        HRESULT hr = StringFromCLSID(s_dyn_property->p_guid, &guidString);
-        props2types.insert({ guidString, s_dyn_property->p_valueType });
+        props2types.insert({ aux_functions::ToStringFromGuid(s_dyn_property->p_guid), s_dyn_property->p_valueType });
     }
     //list properties
 
@@ -142,27 +136,31 @@ void DynPropertiesManager::SavePropertiesAndValueToFile()
     xml::XMLElement* props_values = root->InsertNewChildElement("properties_values");
     for (auto o_info : objects2properties) {
         NcDbHandle handle = o_info.first.handle();
-        NCHAR buffer;
-        bool ckech_succ = handle.getIntoAsciiBuffer(&buffer, 16);
+        NCHAR buffer[32];
+        handle.getIntoAsciiBuffer(buffer);
+
+        std::string s_buffer = aux_functions::ToStringFromWString(buffer, en_loc);
 
         xml::XMLElement* object_def = props_values->InsertNewChildElement("object");
-        object_def->SetAttribute("handle", buffer);
+        object_def->SetAttribute("handle", s_buffer.c_str());
         for (auto o_info_value : o_info.second)
         {
-            OLECHAR* guidString;
-            HRESULT hr = StringFromCLSID(o_info_value.first, &guidString);
-            stringstream ss;
-            ss << guidString;
-            VARTYPE prop_type = props2types[guidString];
+            xml::XMLElement* record_property = object_def->InsertNewChildElement("property");
+
+            //stringstream ss;
+            //ss << guidString2;
+            std::string current_guid = aux_functions::ToStringFromGuid(o_info_value.first);
+            VARTYPE prop_type = props2types[current_guid];
+            record_property->SetAttribute("id", current_guid.c_str());
             switch (prop_type) {
             case VT_I4:
-                object_def->SetAttribute(ss.str().c_str(), o_info_value.second.intVal);
+                record_property->SetAttribute("value", o_info_value.second.intVal);
                 break;
             case VT_R8:
-                object_def->SetAttribute(ss.str().c_str(), o_info_value.second.fltVal);
+                record_property->SetAttribute("value", o_info_value.second.fltVal);
                 break;
             case VT_BSTR:
-                object_def->SetAttribute(ss.str().c_str(), o_info_value.second.bstrVal);
+                record_property->SetAttribute("value", aux_functions::ToStringFromBSTR(o_info_value.second.bstrVal).c_str());
                 break;
             }
         }
@@ -171,6 +169,23 @@ void DynPropertiesManager::SavePropertiesAndValueToFile()
 
     /*saving and writing to file*/
     doc.InsertFirstChild(root);
-    auto save_path = aux_functions::GetTempXmlSavePath();
-    doc.SaveFile(save_path.c_str());
+    //auto save_path = aux_functions::GetTempXmlSavePath();
+    TCHAR username[UNLEN + 1];
+    DWORD size = UNLEN + 1;
+    GetUserName((TCHAR*)username, &size);
+
+    GUID guid3;
+    HRESULT hr1 = CoCreateGuid(&guid3);
+    OLECHAR* guidString3;
+    StringFromCLSID(guid3, &guidString3);
+
+    stringstream ss3;
+    //ss3 << "C:\\Users\\" << username << "\\AppData\\Local\\psets_folder" << "\\" << guidString3 << ".xml";
+    //if (!fs::is_directory(ss3.str()) || !fs::exists(ss3.str())) {
+    //    fs::create_directory(ss3.str());
+    //}
+    //ss3 << "\\" << guidString3 << ".xml";
+    //auto path_3 = ss3.str().c_str();
+    const char* path3 = "C:\\Users\\Georg\\AppData\\Local\\psets_folder\\test.xml";
+    doc.SaveFile(path3);
 }

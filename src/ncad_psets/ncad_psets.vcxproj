@@ -118,15 +118,19 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;_DEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;_DEBUG;_USRDLL;_ITERATOR_DEBUG_LEVEL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(NCadSDK)\include;$(NCadSDK)\include\nrxgate;$(NCadSDK)\include\arxgate;$(NCadSDK)\include\MAPI;$(NCadSDK)\include-Win32\Drawing\ActiveX\OdaX;$(NCadSDK)\include-Win32\Drawing\ActiveX;$(NCadSDK)\include-Win32;$(NCadSDK)\include\Drawing\ActiveX;$(NCadSDK)\include\Drawing\include;$(NCadSDK)\include\Kernel\DevInclude\DbRoot;$(NCadSDK)\include\Kernel\DevInclude;$(NCadSDK)\include\Kernel\include;$(NCadSDK)\include\KernelBase\include;E:\30_Coding\Libs\tinyxml2-9.0.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NCadSDK)\include;$(NCadSDK)\include\nrxgate;$(NCadSDK)\include\arxgate;$(NCadSDK)\include\MAPI;$(NCadSDK)\include-Win32\Drawing\ActiveX\OdaX;$(NCadSDK)\include-Win32\Drawing\ActiveX;$(NCadSDK)\include-Win32;$(NCadSDK)\include\Drawing\ActiveX;$(NCadSDK)\include\Drawing\include;$(NCadSDK)\include\Kernel\DevInclude\DbRoot;$(NCadSDK)\include\Kernel\DevInclude;$(NCadSDK)\include\Kernel\include;$(NCadSDK)\include\KernelBase\include;E:\vcpkg\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StringPooling>
+      </StringPooling>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>.\ncad_psets.def</ModuleDefinitionFile>
-      <AdditionalLibraryDirectories>$(NCadSDK)\lib-$(Platform);$(NCadSDK)\lib-$(Platform)\TD;$(SolutionDir)\bin-$(Platform)\$(Configuration);E:\30_Coding\Libs\tinyxml2-9.0.0-build\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(NCadSDK)\lib-$(Platform);$(NCadSDK)\lib-$(Platform)\TD;$(SolutionDir)\bin-$(Platform)\$(Configuration);E:\vcpkg\vcpkg\installed\x64-windows\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;tinyxml2.lib;</AdditionalDependencies>
     </Link>
     <Midl>
@@ -174,14 +178,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(NCadSDK)\include;$(NCadSDK)\include\nrxgate;$(NCadSDK)\include\arxgate;$(NCadSDK)\include\MAPI;$(NCadSDK)\include-Win32\Drawing\ActiveX\OdaX;$(NCadSDK)\include-Win32\Drawing\ActiveX;$(NCadSDK)\include-Win32;$(NCadSDK)\include\Drawing\ActiveX;$(NCadSDK)\include\Drawing\include;$(NCadSDK)\include\Kernel\DevInclude\DbRoot;$(NCadSDK)\include\Kernel\DevInclude;$(NCadSDK)\include\Kernel\include;$(NCadSDK)\include\KernelBase\include;E:\30_Coding\Libs\tinyxml2-9.0.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(NCadSDK)\include;$(NCadSDK)\include\nrxgate;$(NCadSDK)\include\arxgate;$(NCadSDK)\include\MAPI;$(NCadSDK)\include-Win32\Drawing\ActiveX\OdaX;$(NCadSDK)\include-Win32\Drawing\ActiveX;$(NCadSDK)\include-Win32;$(NCadSDK)\include\Drawing\ActiveX;$(NCadSDK)\include\Drawing\include;$(NCadSDK)\include\Kernel\DevInclude\DbRoot;$(NCadSDK)\include\Kernel\DevInclude;$(NCadSDK)\include\Kernel\include;$(NCadSDK)\include\KernelBase\include;E:\vcpkg\vcpkg\installed\x64-windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ModuleDefinitionFile>.\ncad_psets.def</ModuleDefinitionFile>
-      <AdditionalLibraryDirectories>$(NCadSDK)\lib-$(Platform);$(NCadSDK)\lib-$(Platform)\TD;$(SolutionDir)\bin-$(Platform)\$(Configuration);E:\30_Coding\Libs\tinyxml2-9.0.0-build\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(NCadSDK)\lib-$(Platform);$(NCadSDK)\lib-$(Platform)\TD;$(SolutionDir)\bin-$(Platform)\$(Configuration);E:\vcpkg\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>tinyxml2.lib;</AdditionalDependencies>
     </Link>
     <Midl>

@@ -50,7 +50,6 @@ public:
     BSTR p_name;
     BSTR p_description;
     VARTYPE p_valueType;
-    VARIANT p_default_value;
     PROPCAT p_Cat;
     BSTR p_CatName;
     std::vector<BSTR> p_class_names;
