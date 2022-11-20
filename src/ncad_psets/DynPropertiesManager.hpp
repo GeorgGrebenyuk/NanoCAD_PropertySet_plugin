@@ -17,12 +17,9 @@
 class DynPropertiesManager
 {
 public:
-	//DynPropertiesManager();
+	/*Версия данного исходного кода (для будущих включений в другой код)*/
+	const BSTR version = L"1.0.0";
 	static AcRxClass* m_pClass;
-	//static CComPtr<IPropertyManager>* p_prop_manager;
-	//static CComPtr<IPropertyManager>* p_prop_manager;
-
-
 	/*Создание нового свойства с одиночным значением*/
 	static void CreateSingleDynProperty(
 		/*in*/BSTR name,
@@ -31,7 +28,8 @@ public:
 		/*in*/BSTR category_name,
 		/*in*/std::vector<BSTR> class_names,
 		/*in*/BSTR id);
-
+	/*Удаление регистрации всех свойств из PropertyManager*/
+	static void RemoveAllProperties();
 	//////////////////////////////////////////////////////////////////////////////////////
 	/*Контейнеры*/
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -47,7 +45,7 @@ public:
 	static bool GetPropertyValue(AcDbObjectId* id, GUID* property_id, _variant_t* data);
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	/*Функции импорта*/
+	/*Функции импорта-экспорта*/
 	//////////////////////////////////////////////////////////////////////////////////////
 	/*Загрузка свойств и и их значений из внешнего файла*/
 	static void LoadPropertiesAndValuesFromFile();
