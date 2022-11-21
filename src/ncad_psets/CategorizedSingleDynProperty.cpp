@@ -119,7 +119,10 @@ STDMETHODIMP CategorizedSingleDynProperty::GetCurrentValueData( /*in*/LONG_PTR o
             break;
         }
         ::VariantCopy(pVarData, &_variant_t(current_v));
+        /*Для свойств впервые также ставим*/
+        DynPropertiesManager::SetPropertyValue(&id, &pr_id, &_variant_t(current_v));
     }
+
 
     
     return S_OK;

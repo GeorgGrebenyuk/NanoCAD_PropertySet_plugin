@@ -26,29 +26,7 @@ public:
 			ToWStringFromString(str.c_str()).c_str());
 		return bstr;
 	}
-	static std::string ConvertWCSToMBS(const wchar_t* pstr, long wslen)
-	{
-		std::string to_output = "";
-		try
-		{
-			int len = ::WideCharToMultiByte(CP_ACP, 0, pstr, wslen, NULL, 0, NULL, NULL);
-
-
-			std::string dblstr(1, '\0');
-			len = ::WideCharToMultiByte(CP_ACP, 0 /* no flags */,
-				pstr, wslen /* not necessary NULL-terminated */,
-				&dblstr[0], len,
-				NULL, NULL /* no default char */);
-			to_output = dblstr;
-		}
-		catch (int err1)
-		{
-			//
-		}
-		
-
-		return to_output;
-	}
+	
 	static std::string ToStringFromBSTR(BSTR bstr) 
 	{
 		if (0 == wcscmp(bstr, L"")) return "";

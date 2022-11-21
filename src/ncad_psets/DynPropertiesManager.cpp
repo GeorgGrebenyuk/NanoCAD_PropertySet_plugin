@@ -59,9 +59,29 @@ void DynPropertiesManager::CreateSingleDynProperty(
     }
 
     new_property->p_Cat = cat_index;
-    new_property->AddRef();
-    _com_util::CheckError(prop_manager->AddProperty(new_property));
-    dyn_s_props.push_back(new_property);
+    /*Проверка есть ли уже такое свойство в памяти (по GUID'ам)
+    По остальным параметрам -- на усмотрение Пользователя
+    TODO: сделать вывод сообщений об одноименных свойствах одного типа*/
+
+    bool permit_adding = true;
+    for (auto s_dyn_prop : dyn_s_props)
+    {
+        if (s_dyn_prop->p_guid == guid) 
+        {
+            permit_adding = false;
+            break;
+        }
+    }
+    if (permit_adding)
+    {
+        new_property->AddRef();
+        _com_util::CheckError(prop_manager->AddProperty(new_property));
+        dyn_s_props.push_back(new_property);
+    }
+    else {
+        new_property->Release();
+    }
+
     
 }
 

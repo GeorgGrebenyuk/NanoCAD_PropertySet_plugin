@@ -9,68 +9,68 @@
 namespace xml = tinyxml2;
 
 #include "aux_functions.h"
-#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
-#include <experimental/filesystem>
-
-namespace fs = std::experimental::filesystem;
+//#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+//#include <experimental/filesystem>
+//namespace fs = std::experimental::filesystem;
 
 void DynPropertiesManager::ImportPropertiesByFile() {
-	ACHAR file_path[256];
+	ACHAR file_path[512];
 	int ret;
 	ret = acedGetString(1, L"\nУкажите абсолютный файловый путь: ", file_path);
 
 	if (ret == RTNORM)
 	{
-        std::string line;
+        std::string line_row;
+        std::vector<std::string> lines;
         std::ifstream file_data(file_path);
 
         if (file_data.is_open())
         {
-            while (getline(file_data, line))
+            while (getline(file_data, line_row))
             {
-                std::vector<BSTR> str_data;
-                if (line.substr(0, 1) != "*")
+                if (line_row.substr(0, 1) != "*")
                 {
-                    int last_pos = 0;
-                    for (int i = 0; i < line.size(); i++)
-                    {
-                        if (line[i] == ',')
-                        {
-                            std::string part = line.substr(last_pos, i - last_pos);
-                            auto m = ::SysAllocString(aux_functions::
-                                ToWStringFromString(part.c_str()).c_str());
-                            str_data.push_back(m);
-                            //delete[] cstr;
-                            last_pos = i + 1;
-                        }
-                    }
-                    std::string part = line.substr(last_pos);
-                    CA2W ca2w(part.c_str());
-                    std::wstring wide = ca2w;
-                    auto m = ::SysAllocString(wide.c_str());
-                    str_data.push_back(m);
-                    //char* cstr = strcpy(new char[part.length() + 1], part.c_str());
-
-                    auto prop_type = str_data[2];
-                    VARENUM type = VARENUM::VT_UNKNOWN;
-                    if (0 == wcscmp(prop_type, L"string")) type = VARENUM::VT_BSTR;
-                    else if (0 == wcscmp(prop_type, L"double")) type = VARENUM::VT_R8;
-                    //else if (prop_type == L"bool") type = VARENUM::VT_BOOL;
-                    //else if (prop_type == L"datetime") type = VARENUM::VT_DATE;
-                    else if (0 == wcscmp(prop_type, L"int")) type = VARENUM::VT_I4;
-                    //else if (prop_type == L"long") type = VARENUM::VT_UI4;
-
-                    CComBSTR prop_guid(str_data[4]);
-
-                    GUID created_id;
-
-                    
-                    //CreateSingleDynProperty(prop_name, prop_desc, type, prop_cat_name);
-                    CreateSingleDynProperty(str_data[0], str_data[1], type, str_data[3], {}, NULL);
+                    lines.push_back(line_row);
                 }
             }
         }
         file_data.close();
+
+        for (auto line : lines)
+        {
+            std::vector<BSTR> str_data;
+            int last_pos = 0;
+            for (int i = 0; i < line.size(); i++)
+            {
+                if (line[i] == ',')
+                {
+                    std::string part = line.substr(last_pos, i - last_pos);
+                    BSTR bstr_str = aux_functions::ToBSTRFromString(part);
+                    str_data.push_back(bstr_str);
+                    //delete[] cstr;
+                    last_pos = i + 1;
+                }
+            }
+            std::string part = line.substr(last_pos);
+            BSTR bstr_str2 = aux_functions::ToBSTRFromString(part);
+            str_data.push_back(bstr_str2);
+            //char* cstr = strcpy(new char[part.length() + 1], part.c_str());
+
+            auto prop_type = str_data[2];
+            VARENUM type = VARENUM::VT_UNKNOWN;
+            if (0 == wcscmp(prop_type, L"string")) type = VARENUM::VT_BSTR;
+            else if (0 == wcscmp(prop_type, L"double")) type = VARENUM::VT_R8;
+            //else if (prop_type == L"bool") type = VARENUM::VT_BOOL;
+            //else if (prop_type == L"datetime") type = VARENUM::VT_DATE;
+            else if (0 == wcscmp(prop_type, L"int")) type = VARENUM::VT_I4;
+            //else if (prop_type == L"long") type = VARENUM::VT_UI4;
+
+            CComBSTR prop_guid(str_data[4]);
+
+            GUID created_id;
+            //CreateSingleDynProperty(prop_name, prop_desc, type, prop_cat_name);
+            CreateSingleDynProperty(str_data[0], str_data[1], type, str_data[3], {}, NULL);
+        }
 
 	}
 }

@@ -118,13 +118,12 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;_DEBUG;_USRDLL;_ITERATOR_DEBUG_LEVEL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;_DEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(NCadSDK)\include;$(NCadSDK)\include\nrxgate;$(NCadSDK)\include\arxgate;$(NCadSDK)\include\MAPI;$(NCadSDK)\include-Win32\Drawing\ActiveX\OdaX;$(NCadSDK)\include-Win32\Drawing\ActiveX;$(NCadSDK)\include-Win32;$(NCadSDK)\include\Drawing\ActiveX;$(NCadSDK)\include\Drawing\include;$(NCadSDK)\include\Kernel\DevInclude\DbRoot;$(NCadSDK)\include\Kernel\DevInclude;$(NCadSDK)\include\Kernel\include;$(NCadSDK)\include\KernelBase\include;E:\vcpkg\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <StringPooling>
-      </StringPooling>
-      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
@@ -179,6 +178,7 @@
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(NCadSDK)\include;$(NCadSDK)\include\nrxgate;$(NCadSDK)\include\arxgate;$(NCadSDK)\include\MAPI;$(NCadSDK)\include-Win32\Drawing\ActiveX\OdaX;$(NCadSDK)\include-Win32\Drawing\ActiveX;$(NCadSDK)\include-Win32;$(NCadSDK)\include\Drawing\ActiveX;$(NCadSDK)\include\Drawing\include;$(NCadSDK)\include\Kernel\DevInclude\DbRoot;$(NCadSDK)\include\Kernel\DevInclude;$(NCadSDK)\include\Kernel\include;$(NCadSDK)\include\KernelBase\include;E:\vcpkg\vcpkg\installed\x64-windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
