@@ -51,17 +51,28 @@ public:
 		return ToStringFromGuid(guid);
 	}
 	static std::string GetTempXmlSavePath() {
+
 		TCHAR username[UNLEN + 1];
 		DWORD size = UNLEN + 1;
 		GetUserName((TCHAR*)username, &size);
+		std::string s_username = aux_functions::ToStringFromWString(username, std::locale("ru_RU.UTF-8"));
 
-		stringstream ss;
-		ss << "C:\\Users\\" << username << "\\AppData\\Local\\" << "psets_folder";
-		if (!fs::is_directory(ss.str()) || !fs::exists(ss.str())) {
-			fs::create_directory(ss.str());
+		GUID guid3;
+		HRESULT hr1 = CoCreateGuid(&guid3);
+		std::string guid_new_str = aux_functions::ToStringFromGuid(guid3);
+		//std::string guid_new_str1 = std::regex_replace(guid_new_str, regex("{"), "");
+		//std::string guid_new_str2 = std::regex_replace(guid_new_str1, regex("}"), "");
+		guid_new_str = guid_new_str.replace(guid_new_str.find("{") , 1, "");
+		guid_new_str = guid_new_str.replace(guid_new_str.find("}"), 1, "");
+		stringstream ss3;
+		ss3 << "C:\\Users\\" << s_username << "\\AppData\\Local\\psets_folder";
+		if (!fs::is_directory(ss3.str()) || !fs::exists(ss3.str())) 
+		{
+		    fs::create_directory(ss3.str());
 		}
-		ss << "\\" << NewGuidToWCharString() << ".xml";
-		return ss.str();
+
+		ss3 << "\\" << guid_new_str << ".xml";
+		return ss3.str();
 	}
 	static std::string ToStringFromWString(const std::wstring& wstr, const std::locale& loc)
 	{
@@ -114,6 +125,26 @@ public:
 		} while (r != std::codecvt_base::ok);
 
 		return str;
+	}
+	static std::vector<std::string> StringSplit(const std::string& s, char delim) {
+		std::stringstream ss(s);
+		std::string item;
+		std::vector<std::string> elems;
+		while (std::getline(ss, item, delim)) {
+			elems.push_back(item);
+		}
+		return elems;
+	}
+	static std::string ToJoinedStringFromVectorString(const std::vector<std::string>& tokens, char delimiter)
+	{
+		std::string a;
+		for (auto x : tokens)
+		{
+			a += x;
+			a += delimiter;
+		}
+		a.pop_back();
+		return a;
 	}
 };
 #endif

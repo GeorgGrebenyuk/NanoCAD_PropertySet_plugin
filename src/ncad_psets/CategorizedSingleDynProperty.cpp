@@ -30,33 +30,25 @@ STDMETHODIMP CategorizedSingleDynProperty::IsPropertyEnabled( /*[in]*/LONG_PTR o
         return E_POINTER;
     AcDbObjectId id;
     id.setFromOldId(objectID);
-    *pbEnabled = TRUE;
-    //NcDbHandle h = id.handle();
-    //
-    //acutPrintf(_T("\nHANDLE = %s"), id.handle());
-    /*Свойство будет отображаться, если имя класса находиться 
-    в перечне разрешенных p_class_names*/
-    //try {
 
-    //}
-    //catch (const _com_error&)
-    //{
-    //    acutPrintf(_T("\n failed!!!\n"));
-    //}
-    BSTR class_name = ::SysAllocString(id.objectClass()->name());
-
-    if (!this->p_class_names.empty())
+    std::string s_class_name_current = aux_functions::ToStringFromWString(id.objectClass()->name(), std::locale("en_US.UTF-8"));
+    *pbEnabled = FALSE;
+    if (this->p_class_names.empty()) *pbEnabled = TRUE;
+    else
     {
         for (auto class_name : this->p_class_names)
         {
+            std::string bstr_class_name = aux_functions::ToStringFromBSTR(class_name);
             if (class_name != NULL)
             {
-                if (0 == wcscmp(class_name, class_name)) *pbEnabled = FALSE;
+                if (bstr_class_name == s_class_name_current)
+                {
+                    *pbEnabled = TRUE;
+                    break;
+                }
             }
-
         }
     }
-    
     return S_OK;
 }
 STDMETHODIMP CategorizedSingleDynProperty::IsPropertyReadOnly( /*[out]*/BOOL* pbReadonly)
@@ -101,7 +93,7 @@ STDMETHODIMP CategorizedSingleDynProperty::GetCurrentValueData( /*in*/LONG_PTR o
         DynPropertiesManager::GetPropertyValue(&id, &pr_id, &for_data);
     if (is_value_present)
     {
-        ::VariantCopy(pVarData, &for_data);
+        HRESULT check1 = VariantCopy(pVarData, &for_data);
     }
     else
     {
@@ -112,14 +104,14 @@ STDMETHODIMP CategorizedSingleDynProperty::GetCurrentValueData( /*in*/LONG_PTR o
             current_v = _variant_t(L"");
             break;
         case VARENUM::VT_I4:
-            current_v = _variant_t(0);
+            current_v = _variant_t(1);
             break;
         case VARENUM::VT_R8:
             current_v = _variant_t(0.0);
             break;
         }
-        ::VariantCopy(pVarData, &_variant_t(current_v));
-        /*Для свойств впервые также ставим*/
+        HRESULT check2 = VariantCopy(pVarData, &_variant_t(current_v));
+        /*Для свойств впервые также ставим значения в память*/
         DynPropertiesManager::SetPropertyValue(&id, &pr_id, &_variant_t(current_v));
     }
 

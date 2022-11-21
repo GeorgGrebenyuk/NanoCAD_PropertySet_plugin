@@ -35,7 +35,7 @@ ncrxEntryPoint(NcRx::AppMsgCode msg, void* pkt)
         //unlock the application
 		acrxDynamicLinker->unlockApplication(pkt);
         acrxDynamicLinker->registerAppMDIAware(pkt);
-        DynPropertiesManager::CreateSingleDynProperty(L"Objects_handle", L"", VARENUM::VT_BSTR, L"Default Category", {}, NULL);
+        DynPropertiesManager::CreateSingleDynProperty(L"Test_property", L"", VARENUM::VT_I4, L"Default Category", {}, NULL);
         acedRegCmds->addCommand(cstrCommandGroup,
             _T("_NCAD_PSETS_LoadFromFile"),
             _T("NCAD_PSETS_LoadFromFile"),
