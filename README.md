@@ -17,6 +17,10 @@
 
 https://disk.yandex.ru/i/SEc8gZDemmRjqg
 
+## Обновления модуля
+
+[См. файл](https://github.com/GeorgGrebenyuk/NanoCAD_PropertySet_plugin/blob/main/release_notes.md)
+
 # Дальнейшая работа (TODO)
 
 - расширение числа поддерживаемых типов данных (как минимум, BOOLEAN и списки);
