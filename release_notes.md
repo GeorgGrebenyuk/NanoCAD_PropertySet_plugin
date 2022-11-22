@@ -1,5 +1,22 @@
 # Release notes (Заметки о выпуске)
 
+## v1.2
+### Добавлено:
+
+- команда `_NCAD_PSETS_LoadFromXmlFile`: загрузка из xml-файла информации о свойствах и значениях свойств у объектов;
+- вспомогательные процедуры aux_functions добавлено ToJoinedStringFromVectorString и StringSplit;
+
+### Изменено:
+
+- наименование остальных команд `_NCAD_PSETS_SaveToXmlFile`, `_NCAD_PSETS_LoadPropsFromTextFile`;
+- настроена команда aux_functions::GetTempXmlSavePath создающая папку модуля и формирующая файловый путь для сохранения;
+- заменена логика работы CategorizedSingleDynProperty::IsPropertyEnabled, для учета объектов нужных классов (логика сравнения строк была изменена);
+- для записи в xml информации по объектным классам из конца строки удален лишний разделитель;
+
+### Удалено:
+
+- файл `simpledynprops.vcproj` из ранних файлов, был ненужен;
+
 ## v1.1
 ### Добавлено:
 
