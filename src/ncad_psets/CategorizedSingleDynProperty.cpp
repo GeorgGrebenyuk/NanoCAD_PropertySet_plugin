@@ -84,6 +84,12 @@ STDMETHODIMP CategorizedSingleDynProperty::GetCurrentValueData( /*in*/LONG_PTR o
     if (pVarData == NULL)
         return E_POINTER;
     AcDbObjectId id;
+
+    //NcDbHandle handle = id.handle();
+    //NCHAR buffer[32];
+    //handle.getIntoAsciiBuffer(buffer);
+    //std::string s_buffer = aux_functions::ToStringFromWString(buffer, en_loc);
+
     id.setFromOldId(objectID);
     GUID pr_id;
     this->GetGUID(&pr_id);
@@ -124,6 +130,11 @@ STDMETHODIMP CategorizedSingleDynProperty::SetCurrentValueData( /*[in]*/LONG_PTR
 {
     AcDbObjectId id;
     id.setFromOldId(objectID);
+
+    //NcDbHandle handle = id.handle();
+    //NCHAR buffer[32];
+    //handle.getIntoAsciiBuffer(buffer);
+    //std::string s_buffer = aux_functions::ToStringFromWString(buffer, en_loc);
 
     //is_value_assigned = true;
     GUID pr_id;

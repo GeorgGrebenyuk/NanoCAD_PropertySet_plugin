@@ -15,15 +15,15 @@ namespace xml = tinyxml2;
 //namespace fs = std::experimental::filesystem;
 //static const std::locale ru_loc = std::locale("ru_RU.UTF-8");
 //static const std::locale en_loc = std::locale("en_US.UTF-8");
-static void get_type(VARENUM* type, std::string str)
-{
-    if (str == "string") *type = VARENUM::VT_BSTR;
-    else if (str == "double") *type = VARENUM::VT_R8;
-    //else if (prop_type == L"bool") type = VARENUM::VT_BOOL;
-    //else if (prop_type == L"datetime") type = VARENUM::VT_DATE;
-    else if (str == "int") *type = VARENUM::VT_I4;
-    //else if (prop_type == L"long") type = VARENUM::VT_UI4;
-}
+//static void get_type(VARENUM* type, std::string str)
+//{
+//    if (str == "string") *type = VARENUM::VT_BSTR;
+//    else if (str == "double") *type = VARENUM::VT_R8;
+//    //else if (prop_type == L"bool") type = VARENUM::VT_BOOL;
+//    //else if (prop_type == L"datetime") type = VARENUM::VT_DATE;
+//    else if (str == "int") *type = VARENUM::VT_I4;
+//    //else if (prop_type == L"long") type = VARENUM::VT_UI4;
+//}
 void DynPropertiesManager::ImportPropertiesByFile() {
 	ACHAR file_path[512];
 	int ret;
@@ -54,7 +54,9 @@ void DynPropertiesManager::ImportPropertiesByFile() {
 
             auto prop_type = str_data[2];
             VARENUM type = VARENUM::VT_UNKNOWN;
-            get_type(&type, prop_type);
+            if (prop_type == "string") type = VARENUM::VT_BSTR;
+            else if (prop_type == "double") type = VARENUM::VT_R8;
+            else if (prop_type == "int") type = VARENUM::VT_I4;
 
             //CComBSTR prop_guid(str_data[4]);
             std::vector<BSTR> classes;
@@ -101,7 +103,7 @@ void DynPropertiesManager::LoadPropertiesAndValuesFromFile()
     if (ret != RTNONE)
     {
         AcDbDatabase* pCurDb = acDocManager->curDocument()->database();
-        std::map<std::string, AcDbObjectId> current_data = aux_functions::GetDrawingsIds(pCurDb);
+        std::map<std::string, AcDbObjectId> current_data = aux_functions::GetDrawingHandles(pCurDb);
         xml::XMLDocument xml_doc;
         auto check_openning = xml_doc.LoadFile(s_file_path.c_str());
         if (check_openning == xml::XMLError::XML_SUCCESS)
@@ -118,9 +120,12 @@ void DynPropertiesManager::LoadPropertiesAndValuesFromFile()
                 std::string p_name = child->FindAttribute("name")->Value();
                 BSTR name = aux_functions::ToBSTRFromString(p_name);
                 auto description = aux_functions::ToBSTRFromString(child->FindAttribute("description")->Value());
-                std::string s_type;
+                std::string s_type = child->FindAttribute("type")->Value();
                 VARENUM type = VARENUM::VT_UNKNOWN;
-                get_type(&type, child->FindAttribute("type")->Value());
+                if (s_type == "8") type = VARENUM::VT_BSTR;
+                else if (s_type == "5") type = VARENUM::VT_R8;
+                else if (s_type == "3") type = VARENUM::VT_I4;
+                
                 auto category = aux_functions::ToBSTRFromString(child->FindAttribute("category")->Value());
                 auto id = aux_functions::ToBSTRFromString(child->FindAttribute("id")->Value());
                 /*classes*/
@@ -159,11 +164,16 @@ void DynPropertiesManager::LoadPropertiesAndValuesFromFile()
                     for (xml::XMLElement* prop_value = child->FirstChildElement(); prop_value != NULL;
                         prop_value = prop_value->NextSiblingElement())
                     {
-                        auto data_guid = prop_value->FindAttribute("id")->Value();
+                        std::string s_value = prop_value->FindAttribute("value")->Value();
+
+                        std::string data_guid = prop_value->FindAttribute("id")->Value();
+                        //data_guid = data_guid.replace(data_guid.find("{"), 1, "");
+                        //data_guid = data_guid.replace(data_guid.find("}"), 1, "");
+
                         auto w_data_guid = aux_functions::ToWStringFromString(data_guid);
                         GUID represented_guid;
                         HRESULT hr2 = CLSIDFromString(w_data_guid.c_str(), (LPCLSID) &represented_guid);
-                        if (hr2 == S_OK) 
+                        if (hr2 == S_OK)
                         {
                             std::string current_guid = aux_functions::ToStringFromGuid(represented_guid);
                             VARTYPE prop_type = props2types[current_guid];
@@ -172,16 +182,22 @@ void DynPropertiesManager::LoadPropertiesAndValuesFromFile()
                             switch (prop_type)
                             {
                             case VARENUM::VT_BSTR:
-                                current_v = _variant_t(L"");
+                                
+                                current_v = _variant_t(aux_functions::ToWStringFromString(s_value).c_str());
                                 break;
                             case VARENUM::VT_I4:
-                                current_v = _variant_t(1);
+
+                                //current_v = _variant_t(child->FindAttribute("value")->IntValue());
+                                //current_v = _variant_t(5);
+                                current_v = _variant_t(atoi(s_value.c_str()));
                                 break;
                             case VARENUM::VT_R8:
-                                current_v = _variant_t(0.0);
+                                //current_v = _variant_t(child->FindAttribute("value")->DoubleValue(), VARENUM::VT_R8);
+                                //current_v = _variant_t(5.0);
+                                current_v = _variant_t(atof(s_value.c_str()), VARENUM::VT_R8);
                                 break;
                             }
-                            DynPropertiesManager::SetPropertyValue(&drawing_object_id, 
+                            DynPropertiesManager::SetPropertyValue(&drawing_object_id,
                                 &represented_guid, &_variant_t(current_v));
                         }
                     }
@@ -243,8 +259,8 @@ void DynPropertiesManager::SavePropertiesAndValueToFile()
         NcDbHandle handle = o_info.first.handle();
         NCHAR buffer[32];
         handle.getIntoAsciiBuffer(buffer);
-
         std::string s_buffer = aux_functions::ToStringFromWString(buffer, en_loc);
+
         xml::XMLElement* object_def = props_values->InsertNewChildElement("object");
         object_def->SetAttribute("handle", s_buffer.c_str());
         for (auto o_info_value : o_info.second)

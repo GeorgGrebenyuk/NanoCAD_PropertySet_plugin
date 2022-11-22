@@ -169,7 +169,7 @@ public:
 		file_data.close();
 		return lines;
 	}
-	static std::map<std::string, AcDbObjectId> GetDrawingsIds(AcDbDatabase* db)
+	static std::map<std::string, AcDbObjectId> GetDrawingHandles(AcDbDatabase* db)
 	{
 		//AcDbDatabase* denneDatabasen = acdbHostApplicationServices()->workingDatabase();
 		AcDbBlockTable* pBlockTable;
@@ -177,7 +177,7 @@ public:
 		es = db->getBlockTable(pBlockTable, AcDb::kForRead);
 
 		//AcDbObjectIdArray objekter;
-		std::map<std::string, AcDbObjectId> handle2objectid;
+		std::map<std::string, AcDbObjectId> handle2ids;
 		if (es == Acad::eOk)
 		{
 			AcDbBlockTableRecord* pMSpaceRecord;
@@ -200,7 +200,8 @@ public:
 							ACHAR buffer[32];
 							handle.getIntoAsciiBuffer(buffer);
 							std::string s_buffer = aux_functions::ToStringFromWString(buffer, en_loc);
-							handle2objectid.insert(std::make_pair(s_buffer, entId));
+							//handles.push_back(s_buffer);
+							handle2ids.insert(std::make_pair(s_buffer, entId));
 							enEnt->close();
 						}
 					}
@@ -222,7 +223,7 @@ public:
 		{
 			acutPrintf(L"\nНе удалось открыть  blocktablerecord");
 		}
-		return handle2objectid;
+		return handle2ids;
 	}
 };
 #endif
