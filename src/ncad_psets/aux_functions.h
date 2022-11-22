@@ -1,4 +1,4 @@
-#ifndef __AUX_FUNCTIONS_H_
+﻿#ifndef __AUX_FUNCTIONS_H_
 #define __AUX_FUNCTIONS_H_
 #include "stdafx.h"
 #include "string"
@@ -12,6 +12,10 @@
 #include <experimental/filesystem>
 
 namespace fs = std::experimental::filesystem;
+
+static const std::locale ru_loc = std::locale("ru_RU.UTF-8");
+static const std::locale en_loc = std::locale("en_US.UTF-8");
+
 class aux_functions {
 public:
 	static std::wstring ToWStringFromString(std::string str)
@@ -145,6 +149,80 @@ public:
 		}
 		a.pop_back();
 		return a;
+	}
+	static std::vector<std::string> ReadFileByPath(const char* file_path)
+	{
+		std::string line_row;
+		std::vector<std::string> lines;
+		std::ifstream file_data(file_path);
+
+		if (file_data.is_open())
+		{
+			while (getline(file_data, line_row))
+			{
+				if (line_row.substr(0, 1) != "*")
+				{
+					lines.push_back(line_row);
+				}
+			}
+		}
+		file_data.close();
+		return lines;
+	}
+	static std::map<std::string, AcDbObjectId> GetDrawingsIds(AcDbDatabase* db)
+	{
+		//AcDbDatabase* denneDatabasen = acdbHostApplicationServices()->workingDatabase();
+		AcDbBlockTable* pBlockTable;
+		Acad::ErrorStatus es;
+		es = db->getBlockTable(pBlockTable, AcDb::kForRead);
+
+		//AcDbObjectIdArray objekter;
+		std::map<std::string, AcDbObjectId> handle2objectid;
+		if (es == Acad::eOk)
+		{
+			AcDbBlockTableRecord* pMSpaceRecord;
+			es = pBlockTable->getAt(ACDB_MODEL_SPACE, pMSpaceRecord, AcDb::kForWrite);
+			if (es == Acad::eOk)
+			{
+				AcDbBlockTableRecordIterator* pIterator;
+				es = pMSpaceRecord->newIterator(pIterator);
+				if (es == Acad::eOk)
+				{
+					for (pIterator->start(); !pIterator->done(); pIterator->step())
+					{
+						AcDbEntity* enEnt;
+						es = pIterator->getEntity(enEnt, AcDb::kForWrite);
+						if (es == Acad::eOk)
+						{
+							AcDbObjectId entId;
+							pIterator->getEntityId(entId);
+							AcDbHandle handle = entId.handle();
+							ACHAR buffer[32];
+							handle.getIntoAsciiBuffer(buffer);
+							std::string s_buffer = aux_functions::ToStringFromWString(buffer, en_loc);
+							handle2objectid.insert(std::make_pair(s_buffer, entId));
+							enEnt->close();
+						}
+					}
+					delete pIterator;
+				}
+				else
+				{
+					acutPrintf(L"\nНе удалось создать новый blocktablerecorditerator");
+				}
+				pMSpaceRecord->close();
+			}
+			else
+			{
+				acutPrintf(L"\nНе удалось открыть modelspace");
+			}
+			pBlockTable->close();
+		}
+		else
+		{
+			acutPrintf(L"\nНе удалось открыть  blocktablerecord");
+		}
+		return handle2objectid;
 	}
 };
 #endif

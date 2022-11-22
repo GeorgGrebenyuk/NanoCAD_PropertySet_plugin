@@ -1,4 +1,5 @@
 ﻿#include "stdafx.h"
+#include "resource.h"
 #include "DynPropertiesManager.hpp"
 
 #include <fstream>
@@ -12,30 +13,25 @@ namespace xml = tinyxml2;
 //#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 //#include <experimental/filesystem>
 //namespace fs = std::experimental::filesystem;
-
+//static const std::locale ru_loc = std::locale("ru_RU.UTF-8");
+//static const std::locale en_loc = std::locale("en_US.UTF-8");
+static void get_type(VARENUM* type, std::string str)
+{
+    if (str == "string") *type = VARENUM::VT_BSTR;
+    else if (str == "double") *type = VARENUM::VT_R8;
+    //else if (prop_type == L"bool") type = VARENUM::VT_BOOL;
+    //else if (prop_type == L"datetime") type = VARENUM::VT_DATE;
+    else if (str == "int") *type = VARENUM::VT_I4;
+    //else if (prop_type == L"long") type = VARENUM::VT_UI4;
+}
 void DynPropertiesManager::ImportPropertiesByFile() {
 	ACHAR file_path[512];
 	int ret;
 	ret = acedGetString(1, L"\nУкажите абсолютный файловый путь: ", file_path);
-
+    std::string s_file_path = aux_functions::ToStringFromWString(file_path, ru_loc);
 	if (ret == RTNORM)
 	{
-        std::string line_row;
-        std::vector<std::string> lines;
-        std::ifstream file_data(file_path);
-
-        if (file_data.is_open())
-        {
-            while (getline(file_data, line_row))
-            {
-                if (line_row.substr(0, 1) != "*")
-                {
-                    lines.push_back(line_row);
-                }
-            }
-        }
-        file_data.close();
-
+        auto lines = aux_functions::ReadFileByPath(s_file_path.c_str());
         for (auto line : lines)
         {
             std::vector<std::string> str_data;
@@ -58,12 +54,7 @@ void DynPropertiesManager::ImportPropertiesByFile() {
 
             auto prop_type = str_data[2];
             VARENUM type = VARENUM::VT_UNKNOWN;
-            if (prop_type == "string") type = VARENUM::VT_BSTR;
-            else if (prop_type == "double") type = VARENUM::VT_R8;
-            //else if (prop_type == L"bool") type = VARENUM::VT_BOOL;
-            //else if (prop_type == L"datetime") type = VARENUM::VT_DATE;
-            else if (prop_type == "int") type = VARENUM::VT_I4;
-            //else if (prop_type == L"long") type = VARENUM::VT_UI4;
+            get_type(&type, prop_type);
 
             //CComBSTR prop_guid(str_data[4]);
             std::vector<BSTR> classes;
@@ -73,7 +64,7 @@ void DynPropertiesManager::ImportPropertiesByFile() {
                 for (auto i : splited_data) { classes.push_back(aux_functions::ToBSTRFromString(i)); }
             }
 
-            GUID created_id;
+            //GUID created_id;
             //CreateSingleDynProperty(prop_name, prop_desc, type, prop_cat_name);
             CreateSingleDynProperty(
                 aux_functions::ToBSTRFromString(str_data[0]),
@@ -99,10 +90,108 @@ const char* xml_file_properties_info_name = "properties_info";
 const char* xml_file_properties_values_name = "properties_values";
 void DynPropertiesManager::LoadPropertiesAndValuesFromFile() 
 {
+    /*TODO: сделать preload с просмотром metadata в форме
+    в рамках загрузчика таких файлов из Истории (папки ncad_psets)*/
 
+    ACHAR file_path[512];
+    int ret;
+    ret = acedGetString(1, L"\nУкажите абсолютный файловый путь до файла конфигурации: ", file_path);
+    std::string s_file_path = aux_functions::ToStringFromWString(file_path, ru_loc);
+
+    if (ret != RTNONE)
+    {
+        AcDbDatabase* pCurDb = acDocManager->curDocument()->database();
+        std::map<std::string, AcDbObjectId> current_data = aux_functions::GetDrawingsIds(pCurDb);
+        xml::XMLDocument xml_doc;
+        auto check_openning = xml_doc.LoadFile(s_file_path.c_str());
+        if (check_openning == xml::XMLError::XML_SUCCESS)
+        {
+            xml::XMLElement* root = xml_doc.RootElement();
+            std::map<std::string, VARTYPE> props2types;
+
+            /*Регистрация новых свойств*/
+            xml::XMLElement* props_list = root->FirstChildElement(xml_file_properties_info_name);
+            for (xml::XMLElement* child = props_list->FirstChildElement(); child != NULL; 
+                child = child->NextSiblingElement())
+            {
+                /*Для одного свойства*/
+                std::string p_name = child->FindAttribute("name")->Value();
+                BSTR name = aux_functions::ToBSTRFromString(p_name);
+                auto description = aux_functions::ToBSTRFromString(child->FindAttribute("description")->Value());
+                std::string s_type;
+                VARENUM type = VARENUM::VT_UNKNOWN;
+                get_type(&type, child->FindAttribute("type")->Value());
+                auto category = aux_functions::ToBSTRFromString(child->FindAttribute("category")->Value());
+                auto id = aux_functions::ToBSTRFromString(child->FindAttribute("id")->Value());
+                /*classes*/
+                std::string to_classes_data = child->FindAttribute("to_classes")->Value();
+                std::vector<BSTR> classes;
+                if (!to_classes_data.empty())
+                {
+                    auto splited_data = aux_functions::StringSplit(to_classes_data, ';');
+                    for (auto i : splited_data) { classes.push_back(aux_functions::ToBSTRFromString(i)); }
+                }
+                props2types.insert({ child->FindAttribute("id")->Value(), type });
+                CreateSingleDynProperty(name, description, type, category, classes, id);
+            }
+            /*assign properties values by reading handle*/
+            xml::XMLElement* props_values_list = root->FirstChildElement(xml_file_properties_values_name);
+            for (xml::XMLElement* child = props_values_list->FirstChildElement(); child != NULL;
+                child = child->NextSiblingElement())
+            {
+                /*Для одного объекта*/
+                std::string s_handle = child->FindAttribute("handle")->Value();
+                auto w_handle = aux_functions::ToWStringFromString(s_handle);
+                AcDbObjectId drawing_object_id = AcDbObjectId::kNull;
+                try
+                {
+
+                    AcDbHandle drawing_handle(w_handle.c_str());
+                    if (pCurDb->getAcDbObjectId(drawing_object_id, false, drawing_handle) == Acad::eOk)
+                    {
+                        drawing_object_id = current_data[s_handle];
+                    }
+                }
+                catch (int err) {}
+
+                if (!drawing_object_id.isNull())
+                {
+                    for (xml::XMLElement* prop_value = child->FirstChildElement(); prop_value != NULL;
+                        prop_value = prop_value->NextSiblingElement())
+                    {
+                        auto data_guid = prop_value->FindAttribute("id")->Value();
+                        auto w_data_guid = aux_functions::ToWStringFromString(data_guid);
+                        GUID represented_guid;
+                        HRESULT hr2 = CLSIDFromString(w_data_guid.c_str(), (LPCLSID) &represented_guid);
+                        if (hr2 == S_OK) 
+                        {
+                            std::string current_guid = aux_functions::ToStringFromGuid(represented_guid);
+                            VARTYPE prop_type = props2types[current_guid];
+
+                            VARIANT current_v;
+                            switch (prop_type)
+                            {
+                            case VARENUM::VT_BSTR:
+                                current_v = _variant_t(L"");
+                                break;
+                            case VARENUM::VT_I4:
+                                current_v = _variant_t(1);
+                                break;
+                            case VARENUM::VT_R8:
+                                current_v = _variant_t(0.0);
+                                break;
+                            }
+                            DynPropertiesManager::SetPropertyValue(&drawing_object_id, 
+                                &represented_guid, &_variant_t(current_v));
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 //////////////////////////////////////////////////////////////////////////////////////
-/*Для сохранения свойствв в файл*/
+/*Для сохранения свойств в файл*/
 //////////////////////////////////////////////////////////////////////////////////////
 
 void xml_create_property(xml::XMLDocument* doc, xml::XMLElement* prop_list,
@@ -128,10 +217,6 @@ void xml_create_property(xml::XMLDocument* doc, xml::XMLElement* prop_list,
 }
 void DynPropertiesManager::SavePropertiesAndValueToFile() 
 {
-    //stringstream ss;  
-    const std::locale ru_loc = std::locale("ru_RU.UTF-8");
-    const std::locale en_loc = std::locale("en_US.UTF-8");
-
     xml::XMLDocument doc = new xml::XMLDocument();
     tinyxml2::XMLElement* root = doc.NewElement(xml_file_root_name);
     /*metadata*/
@@ -139,11 +224,8 @@ void DynPropertiesManager::SavePropertiesAndValueToFile()
     xml::XMLElement* project_info = meta->InsertNewChildElement(xml_file_project_info_name);
 
     AcApDocument* doc_model = acDocManager->curDocument();
-    const NCHAR* path = doc_model->fileName();
-    
-    std::string p0 = aux_functions::ToStringFromWString(path, ru_loc);
-    //std::string converted_str = converter.to_bytes(path);
-    project_info->SetAttribute("project_name", p0.c_str());
+    const NCHAR* project_path = doc_model->fileName();
+    project_info->SetAttribute("project_path", aux_functions::ToStringFromWString(project_path, ru_loc).c_str());
 
     /*properties info*/
     std::map<std::string, VARTYPE> props2types;

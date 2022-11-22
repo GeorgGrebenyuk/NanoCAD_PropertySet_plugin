@@ -37,15 +37,20 @@ ncrxEntryPoint(NcRx::AppMsgCode msg, void* pkt)
         acrxDynamicLinker->registerAppMDIAware(pkt);
         DynPropertiesManager::CreateSingleDynProperty(L"Test_property", L"", VARENUM::VT_I4, L"Default Category", {}, NULL);
         acedRegCmds->addCommand(cstrCommandGroup,
-            _T("_NCAD_PSETS_LoadFromFile"),
-            _T("NCAD_PSETS_LoadFromFile"),
+            _T("_NCAD_PSETS_LoadPropsFromTextFile"),
+            _T("NCAD_PSETS_LoadPropsFromTextFile"),
             ACRX_CMD_MODAL,
             DynPropertiesManager::ImportPropertiesByFile);
         acedRegCmds->addCommand(cstrCommandGroup,
-            _T("_NCAD_PSETS_SaveToFile"),
-            _T("NCAD_PSETS_SaveToFile"),
+            _T("_NCAD_PSETS_SaveToXmlFile"),
+            _T("NCAD_PSETS_SaveToXmlFile"),
             ACRX_CMD_MODAL,
             DynPropertiesManager::SavePropertiesAndValueToFile);
+        acedRegCmds->addCommand(cstrCommandGroup,
+            _T("_NCAD_PSETS_LoadFromXmlFile"),
+            _T("NCAD_PSETS_LoadFromXmlFile"),
+            ACRX_CMD_MODAL,
+            DynPropertiesManager::LoadPropertiesAndValuesFromFile);
         break;
 	case AcRx::kUnloadAppMsg:
         acedRegCmds->removeGroup(cstrCommandGroup);

@@ -34,6 +34,7 @@ void DynPropertiesManager::CreateSingleDynProperty(
         if (hr2 != S_OK) {
             new_property->p_guid = guid;
         }
+        /*если успешно, он уже преобразованный в теле запроса*/
     }
     new_property->p_name = name;
     new_property->p_description = description;
