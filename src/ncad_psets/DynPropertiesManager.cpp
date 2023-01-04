@@ -149,3 +149,21 @@ bool DynPropertiesManager::GetPropertyValue(AcDbObjectId* id,
     }
     return true;
 }
+void DynPropertiesManager::DeleteAllProperties() {
+    categories_names.clear();
+    objects2properties.clear();
+
+    CComPtr<IPropertyManager> prop_manager;
+    if ((prop_manager.p = GET_OPMPROPERTY_MANAGER(m_pClass)) == NULL)
+        _com_issue_error(E_FAIL);
+
+    for (auto prop : dyn_s_props)
+    {
+        if (prop)
+        {
+            prop_manager->RemoveProperty(prop);
+            prop->Release();
+        }
+
+    }
+}

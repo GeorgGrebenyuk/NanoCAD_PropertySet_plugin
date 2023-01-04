@@ -70,5 +70,7 @@ public:
 
 	static void WritePropsToConsole();
 
+	static void DeleteAllProperties();
+
 };
 #endif

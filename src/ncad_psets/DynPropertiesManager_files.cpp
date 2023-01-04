@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+//#include <codecvt>
 
 #include <tinyxml2.h>
 namespace xml = tinyxml2;
@@ -90,6 +91,7 @@ const char* xml_file_metadata_name = "metadata";
 const char* xml_file_project_info_name = "project_info";
 const char* xml_file_properties_info_name = "properties_info";
 const char* xml_file_properties_values_name = "properties_values";
+
 void DynPropertiesManager::LoadPropertiesAndValuesFromFile() 
 {
     /*TODO: сделать preload с просмотром metadata в форме
@@ -105,7 +107,12 @@ void DynPropertiesManager::LoadPropertiesAndValuesFromFile()
         AcDbDatabase* pCurDb = acDocManager->curDocument()->database();
         std::map<std::string, AcDbObjectId> current_data = aux_functions::GetDrawingHandles(pCurDb);
         xml::XMLDocument xml_doc;
-        auto check_openning = xml_doc.LoadFile(s_file_path.c_str());
+
+        //Оттого что ебаный tinyxml игнорит блять кодировку!!!!! делаем так
+        
+        //auto xml_as_chars = aux_functions::ReadFileByPathAsConstChar(s_file_path.c_str());
+        auto check_openning = xml_doc.LoadFile(s_file_path.c_str()); // xml_doc.Parse(xml_as_chars)
+
         if (check_openning == xml::XMLError::XML_SUCCESS)
         {
             xml::XMLElement* root = xml_doc.RootElement();
@@ -127,17 +134,28 @@ void DynPropertiesManager::LoadPropertiesAndValuesFromFile()
                 else if (s_type == "3") type = VARENUM::VT_I4;
                 
                 auto category = aux_functions::ToBSTRFromString(child->FindAttribute("category")->Value());
-                auto id = aux_functions::ToBSTRFromString(child->FindAttribute("id")->Value());
-                /*classes*/
-                std::string to_classes_data = child->FindAttribute("to_classes")->Value();
-                std::vector<BSTR> classes;
-                if (!to_classes_data.empty())
+
+                std::string data_guid = child->FindAttribute("id")->Value();
+                auto w_data_guid = aux_functions::ToWStringFromString(data_guid);
+                GUID represented_guid;
+                HRESULT hr2 = CLSIDFromString(w_data_guid.c_str(), (LPCLSID)&represented_guid);
+
+                if (hr2 == S_OK)
                 {
-                    auto splited_data = aux_functions::StringSplit(to_classes_data, ';');
-                    for (auto i : splited_data) { classes.push_back(aux_functions::ToBSTRFromString(i)); }
+                    std::string current_guid = aux_functions::ToStringFromGuid(represented_guid);
+                    auto id = aux_functions::ToBSTRFromString(current_guid);
+
+                    /*classes*/
+                    std::string to_classes_data = child->FindAttribute("to_classes")->Value();
+                    std::vector<BSTR> classes;
+                    if (!to_classes_data.empty())
+                    {
+                        auto splited_data = aux_functions::StringSplit(to_classes_data, ';');
+                        for (auto i : splited_data) { classes.push_back(aux_functions::ToBSTRFromString(i)); }
+                    }
+                    props2types.insert({ current_guid, type });
+                    CreateSingleDynProperty(name, description, type, category, classes, id);
                 }
-                props2types.insert({ child->FindAttribute("id")->Value(), type });
-                CreateSingleDynProperty(name, description, type, category, classes, id);
             }
             /*assign properties values by reading handle*/
             xml::XMLElement* props_values_list = root->FirstChildElement(xml_file_properties_values_name);
@@ -164,7 +182,8 @@ void DynPropertiesManager::LoadPropertiesAndValuesFromFile()
                     for (xml::XMLElement* prop_value = child->FirstChildElement(); prop_value != NULL;
                         prop_value = prop_value->NextSiblingElement())
                     {
-                        std::string s_value = prop_value->FindAttribute("value")->Value();
+                        auto attr_value = prop_value->FindAttribute("value");
+                        auto s_value = attr_value->Value();
 
                         std::string data_guid = prop_value->FindAttribute("id")->Value();
                         //data_guid = data_guid.replace(data_guid.find("{"), 1, "");
@@ -178,23 +197,21 @@ void DynPropertiesManager::LoadPropertiesAndValuesFromFile()
                             std::string current_guid = aux_functions::ToStringFromGuid(represented_guid);
                             VARTYPE prop_type = props2types[current_guid];
 
-                            VARIANT current_v;
+                            VARIANT current_v = _variant_t();
                             switch (prop_type)
                             {
                             case VARENUM::VT_BSTR:
-                                
-                                current_v = _variant_t(aux_functions::ToWStringFromString(s_value).c_str());
+                            {
+                                auto str_representation = aux_functions::ToWStringFromConstChar(s_value).c_str();
+                                current_v = _variant_t(str_representation);
                                 break;
-                            case VARENUM::VT_I4:
+                            }
 
-                                //current_v = _variant_t(child->FindAttribute("value")->IntValue());
-                                //current_v = _variant_t(5);
-                                current_v = _variant_t(atoi(s_value.c_str()));
+                            case VARENUM::VT_I4:
+                                current_v = _variant_t(atoi(s_value));
                                 break;
                             case VARENUM::VT_R8:
-                                //current_v = _variant_t(child->FindAttribute("value")->DoubleValue(), VARENUM::VT_R8);
-                                //current_v = _variant_t(5.0);
-                                current_v = _variant_t(atof(s_value.c_str()), VARENUM::VT_R8);
+                                current_v = _variant_t(atof(s_value), VARENUM::VT_R8);
                                 break;
                             }
                             DynPropertiesManager::SetPropertyValue(&drawing_object_id,
@@ -203,6 +220,7 @@ void DynPropertiesManager::LoadPropertiesAndValuesFromFile()
                     }
                 }
             }
+            int for_breakpoint_1 = 0;
         }
     }
 }
@@ -263,6 +281,7 @@ void DynPropertiesManager::SavePropertiesAndValueToFile()
 
         xml::XMLElement* object_def = props_values->InsertNewChildElement("object");
         object_def->SetAttribute("handle", s_buffer.c_str());
+
         for (auto o_info_value : o_info.second)
         {
             xml::XMLElement* record_property = object_def->InsertNewChildElement("property");

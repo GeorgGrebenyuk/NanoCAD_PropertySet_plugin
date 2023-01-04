@@ -24,6 +24,12 @@ public:
 		std::wstring wide = ca2w;
 		return wide;
 	}
+	static std::wstring ToWStringFromConstChar(const char* str)
+	{
+		CA2W ca2w(str);
+		std::wstring wide = ca2w;
+		return wide;
+	}
 	static BSTR ToBSTRFromString(std::string str)
 	{
 		BSTR bstr = ::SysAllocString(aux_functions::
@@ -168,6 +174,23 @@ public:
 		}
 		file_data.close();
 		return lines;
+	}
+	static const char* ReadFileByPathAsConstChar(const char* file_path)
+	{
+		std::string line_row;
+		std::vector<std::string> lines;
+		std::ifstream file_data(file_path);
+		std::stringstream ss;
+
+		if (file_data.is_open())
+		{
+			while (getline(file_data, line_row))
+			{
+				ss << line_row;
+			}
+		}
+		file_data.close();
+		return ss.str().c_str();
 	}
 	static std::map<std::string, AcDbObjectId> GetDrawingHandles(AcDbDatabase* db)
 	{

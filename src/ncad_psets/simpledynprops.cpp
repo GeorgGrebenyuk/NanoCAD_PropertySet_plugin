@@ -35,7 +35,8 @@ ncrxEntryPoint(NcRx::AppMsgCode msg, void* pkt)
         //unlock the application
 		acrxDynamicLinker->unlockApplication(pkt);
         acrxDynamicLinker->registerAppMDIAware(pkt);
-        DynPropertiesManager::CreateSingleDynProperty(L"Test_property", L"", VARENUM::VT_I4, L"Default Category", {}, NULL);
+        DynPropertiesManager::CreateSingleDynProperty(L"Test_property", L"", 
+            VARENUM::VT_I4, L"Default Category", {}, NULL);
         acedRegCmds->addCommand(cstrCommandGroup,
             _T("_NCAD_PSETS_LoadPropsFromTextFile"),
             _T("NCAD_PSETS_LoadPropsFromTextFile"),
@@ -51,6 +52,11 @@ ncrxEntryPoint(NcRx::AppMsgCode msg, void* pkt)
             _T("NCAD_PSETS_LoadFromXmlFile"),
             ACRX_CMD_MODAL,
             DynPropertiesManager::LoadPropertiesAndValuesFromFile);
+        acedRegCmds->addCommand(cstrCommandGroup,
+            _T("_NCAD_PSETS_DeleteAllProperties"),
+            _T("NCAD_PSETS_DeleteAllProperties"),
+            ACRX_CMD_MODAL,
+            DynPropertiesManager::DeleteAllProperties);
         break;
 	case AcRx::kUnloadAppMsg:
         acedRegCmds->removeGroup(cstrCommandGroup);
