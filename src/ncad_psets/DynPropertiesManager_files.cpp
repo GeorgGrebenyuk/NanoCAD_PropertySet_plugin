@@ -107,11 +107,8 @@ void DynPropertiesManager::LoadPropertiesAndValuesFromFile()
         AcDbDatabase* pCurDb = acDocManager->curDocument()->database();
         std::map<std::string, AcDbObjectId> current_data = aux_functions::GetDrawingHandles(pCurDb);
         xml::XMLDocument xml_doc;
-
-        //Оттого что ебаный tinyxml игнорит блять кодировку!!!!! делаем так
-        
-        //auto xml_as_chars = aux_functions::ReadFileByPathAsConstChar(s_file_path.c_str());
-        auto check_openning = xml_doc.LoadFile(s_file_path.c_str()); // xml_doc.Parse(xml_as_chars)
+        //Необходимо чтобы XML был в ANSI-кодировке. Из-под C# я это могу сохранить, тут нет
+        auto check_openning = xml_doc.LoadFile(s_file_path.c_str()); // 
 
         if (check_openning == xml::XMLError::XML_SUCCESS)
         {
@@ -202,7 +199,7 @@ void DynPropertiesManager::LoadPropertiesAndValuesFromFile()
                             {
                             case VARENUM::VT_BSTR:
                             {
-                                auto str_representation = aux_functions::ToWStringFromConstChar(s_value).c_str();
+                                auto str_representation = aux_functions::ToBSTRFromString(s_value);
                                 current_v = _variant_t(str_representation);
                                 break;
                             }
@@ -252,7 +249,9 @@ void xml_create_property(xml::XMLDocument* doc, xml::XMLElement* prop_list,
 void DynPropertiesManager::SavePropertiesAndValueToFile() 
 {
     xml::XMLDocument doc = new xml::XMLDocument();
+    //doc.InsertFirstChild(doc.NewDeclaration());
     tinyxml2::XMLElement* root = doc.NewElement(xml_file_root_name);
+
     /*metadata*/
     xml::XMLElement* meta = root->InsertNewChildElement(xml_file_metadata_name);
     xml::XMLElement* project_info = meta->InsertNewChildElement(xml_file_project_info_name);
@@ -308,6 +307,11 @@ void DynPropertiesManager::SavePropertiesAndValueToFile()
 
     /*saving and writing to file*/
     doc.InsertFirstChild(root);
-    auto save_path = aux_functions::GetTempXmlSavePath();
+    auto save_path = aux_functions::GetTempSavePath();
+    //doc.SetBOM(true);
+
     doc.SaveFile(save_path.c_str());
+
+    // Need convert to ANSI
+    //aux_functions::ConvertFileToAnsiFromUTF8(save_path);
 }
