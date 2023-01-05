@@ -44,7 +44,7 @@ public:
 		//return ConvertWCSToMBS((wchar_t*)bstr, wslen);
 		return ToStringFromWString(bstr, std::locale("ru_RU.UTF-8"));
 
-	}
+	}	
 	static std::string ToStringFromGuid(GUID guid)
 	{
 		OLECHAR* guidString;
@@ -60,7 +60,7 @@ public:
 		HRESULT hr1 = CoCreateGuid(&guid);
 		return ToStringFromGuid(guid);
 	}
-	static std::string GetTempXmlSavePath() {
+	static std::string GetTempSavePath() {
 
 		TCHAR username[UNLEN + 1];
 		DWORD size = UNLEN + 1;
@@ -178,7 +178,7 @@ public:
 	static const char* ReadFileByPathAsConstChar(const char* file_path)
 	{
 		std::string line_row;
-		std::vector<std::string> lines;
+		//std::vector<std::string> lines;
 		std::ifstream file_data(file_path);
 		std::stringstream ss;
 
