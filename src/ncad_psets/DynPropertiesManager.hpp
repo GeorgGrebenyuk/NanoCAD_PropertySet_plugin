@@ -46,8 +46,16 @@ public:
 	/*Контейнеры*/
 	//////////////////////////////////////////////////////////////////////////////////////
 	static std::vector<BSTR> categories_names;
-
+	/*Эти параметры (свойств) регистрируются на всю сессию, а не чертёж*/
+	static int dyn_s_props_counter;
 	static std::vector<CComObject<CategorizedSingleDynProperty>*> dyn_s_props;
+	/* В силу того, что свойства регистрируются на сессию приложения, необходимо
+	*  переопределить, в каком документе они будут отображаться, а в каком -- не будут.
+	* Словарь далее хранит текущую БД документа, а аргумент -- номера свойств из dyn_s_props,
+	* которые для документа разрешены
+	*/
+	static std::map<std::wstring, std::vector<int>> document2properties;
+
 	//static std::map<GUID, int> props_id2index;
 	/*Сохранение объектных значений в процессе работы с чертежом*/
 	static std::map<AcDbObjectId, std::map<GUID, _variant_t>> objects2properties;

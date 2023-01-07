@@ -7,7 +7,6 @@
 //#include "SimpleDynProperty.hpp"
 #include "dynprops.h"
 
-
 /// <summary>
 /// Class for descripte dynamic properties that contains in category
 /// </summary>

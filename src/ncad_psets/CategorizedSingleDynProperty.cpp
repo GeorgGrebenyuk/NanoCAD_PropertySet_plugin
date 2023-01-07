@@ -49,6 +49,32 @@ STDMETHODIMP CategorizedSingleDynProperty::IsPropertyEnabled( /*[in]*/LONG_PTR o
             }
         }
     }
+    /*Проверяем уместность отображения свойства в зависимости от принадлежности документу*/
+    if (*pbEnabled == TRUE)
+    {
+        *pbEnabled = FALSE;
+        //bool is_that_doc = false;
+        std::wstring pCurDoc_title(acDocManager->curDocument()->docTitle());
+        for (auto doc_data : DynPropertiesManager::document2properties)
+        {
+            if (doc_data.first == pCurDoc_title)
+            {
+                //is_that_doc = true;
+                for (auto prop_id : doc_data.second)
+                {
+                    if (DynPropertiesManager::dyn_s_props[prop_id] == this)
+                    {
+                        //ok
+                        *pbEnabled = TRUE;
+                        //break;
+                    }
+                }
+            }
+        }
+        //if (!is_that_doc) pbEnabled = FALSE;
+    }
+
+
     return S_OK;
 }
 STDMETHODIMP CategorizedSingleDynProperty::IsPropertyReadOnly( /*[out]*/BOOL* pbReadonly)

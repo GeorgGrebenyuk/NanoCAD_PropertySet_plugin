@@ -1,10 +1,12 @@
 #include "stdafx.h"
 #include "DynPropertiesManager.hpp"
-
+#include "aux_functions.h"
 
 std::vector<CComObject<CategorizedSingleDynProperty>*>DynPropertiesManager::dyn_s_props{ };
 std::map<AcDbObjectId, std::map<GUID, _variant_t>> DynPropertiesManager::objects2properties;
 std::vector<BSTR> DynPropertiesManager::categories_names;
+std::map<std::wstring, std::vector<int>> DynPropertiesManager::document2properties;
+int DynPropertiesManager::dyn_s_props_counter = 0;
 
 AcRxClass* DynPropertiesManager::m_pClass = AcDbEntity::desc();
 
@@ -77,13 +79,31 @@ void DynPropertiesManager::CreateSingleDynProperty(
     {
         new_property->AddRef();
         _com_util::CheckError(prop_manager->AddProperty(new_property));
+        
+
+        /*Фиксируем размерность списка dyn_s_props (фактически, индекс свойства) и добавляем
+        в document2properties*/
+        std::wstring pCurDoc_title(acDocManager->curDocument()->docTitle());
+        bool is_find = false;
+        for (auto t : document2properties)
+        {
+            if (t.first == pCurDoc_title) {
+                document2properties[pCurDoc_title].push_back(dyn_s_props_counter);
+                is_find = true;
+            }
+        }
+        if (!is_find)
+        {
+            std::vector<int> new_x;
+            new_x.push_back(dyn_s_props_counter);
+            document2properties.insert(std::make_pair(pCurDoc_title, new_x));
+        }
+        dyn_s_props_counter++;
         dyn_s_props.push_back(new_property);
     }
     else {
         new_property->Release();
     }
-
-    
 }
 
 static bool operator<(const GUID& a, const GUID& b)
