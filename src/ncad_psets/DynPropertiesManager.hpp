@@ -14,7 +14,7 @@
 
 #include "CategorizedSingleDynProperty.hpp"
 
-class DynPropertiesManager
+class DynPropertiesManager : public AcApDocManagerReactor
 {
 public:
 	/*Версия данного исходного кода (для будущих включений в другой код)*/
@@ -79,6 +79,11 @@ public:
 	static void WritePropsToConsole();
 
 	static void DeleteAllProperties();
+	/*Nandlers of document*/
+	//static AcApDocument* pDoc_pointer;
+	static std::string pDoc_name;
+	static bool status_eventhandler_work;
+
 
 };
 #endif

@@ -200,6 +200,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="aux_functions.h" />
+    <ClInclude Include="DocumentReactor.hpp" />
     <ClInclude Include="DynPropertiesManager.hpp" />
     <ClInclude Include="CategorizedSingleDynProperty.hpp" />
     <ClInclude Include="stdafx.h" />
@@ -207,9 +208,11 @@
     <ClInclude Include="simpledynprops.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DocumentReactor.cpp" />
     <ClCompile Include="DynPropertiesManager.cpp" />
     <ClCompile Include="CategorizedSingleDynProperty.cpp" />
     <ClCompile Include="DynPropertiesManager_files.cpp" />
+    <ClCompile Include="Filesystem_worker.hpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="simpledynprops.cpp" />
   </ItemGroup>

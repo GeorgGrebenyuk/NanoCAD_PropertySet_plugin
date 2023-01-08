@@ -39,6 +39,9 @@
     <ClInclude Include="aux_functions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DocumentReactor.hpp">
+      <Filter>Props</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -54,6 +57,12 @@
       <Filter>Props</Filter>
     </ClCompile>
     <ClCompile Include="DynPropertiesManager_files.cpp">
+      <Filter>Props</Filter>
+    </ClCompile>
+    <ClCompile Include="Filesystem_worker.hpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DocumentReactor.cpp">
       <Filter>Props</Filter>
     </ClCompile>
   </ItemGroup>

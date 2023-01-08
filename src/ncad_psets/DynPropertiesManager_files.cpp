@@ -5,12 +5,14 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <windows.h>
 //#include <codecvt>
 
 #include <tinyxml2.h>
 namespace xml = tinyxml2;
 
 #include "aux_functions.h"
+#include "Filesystem_worker.hpp"
 //#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 //#include <experimental/filesystem>
 //namespace fs = std::experimental::filesystem;
@@ -92,133 +94,143 @@ const char* xml_file_project_info_name = "project_info";
 const char* xml_file_properties_info_name = "properties_info";
 const char* xml_file_properties_values_name = "properties_values";
 
-void DynPropertiesManager::LoadPropertiesAndValuesFromFile() 
+void DynPropertiesManager::LoadPropertiesAndValuesFromFile()
 {
     /*TODO: сделать preload с просмотром metadata в форме
     в рамках загрузчика таких файлов из Истории (папки ncad_psets)*/
+    std::string s_file_path = "";
 
-    ACHAR file_path[512];
-    int ret;
-    ret = acedGetString(1, L"\nУкажите абсолютный файловый путь до файла конфигурации: ", file_path);
-    std::string s_file_path = aux_functions::ToStringFromWString(file_path, ru_loc);
-
-    if (ret != RTNONE)
+    if (status_eventhandler_work)
     {
-        AcDbDatabase* pCurDb = acDocManager->curDocument()->database();
-        std::map<std::string, AcDbObjectId> current_data = aux_functions::GetDrawingHandles(pCurDb);
-        xml::XMLDocument xml_doc;
-        //Необходимо чтобы XML был в ANSI-кодировке. Из-под C# я это могу сохранить, тут нет
-        auto check_openning = xml_doc.LoadFile(s_file_path.c_str()); // 
+        //loading
+        s_file_path = Filesystem_worker::GetFilePathForLoading();
+    }
+    if (s_file_path == "" |!status_eventhandler_work)
+    {
+        //если loading не удался -- запрос файла вручную. Аналогично и если !need_load_from_system
+        ACHAR file_path[512];
+        int ret;
+        ret = acedGetString(1, L"\nУкажите абсолютный файловый путь до файла конфигурации: ", file_path);
+        s_file_path = aux_functions::ToStringFromWString(file_path, ru_loc);
 
-        if (check_openning == xml::XMLError::XML_SUCCESS)
+        if (ret == RTNONE) return;
+    }
+
+    
+    AcDbDatabase* pCurDb = acDocManager->curDocument()->database();
+    std::map<std::string, AcDbObjectId> current_data = aux_functions::GetDrawingHandles(pCurDb);
+    xml::XMLDocument xml_doc;
+    //Необходимо чтобы XML был в ANSI-кодировке. Из-под C# я это могу сохранить, тут нет
+    auto check_openning = xml_doc.LoadFile(s_file_path.c_str()); // 
+
+    if (check_openning == xml::XMLError::XML_SUCCESS)
+    {
+        xml::XMLElement* root = xml_doc.RootElement();
+        std::map<std::string, VARTYPE> props2types;
+
+        /*Регистрация новых свойств*/
+        xml::XMLElement* props_list = root->FirstChildElement(xml_file_properties_info_name);
+        for (xml::XMLElement* child = props_list->FirstChildElement(); child != NULL;
+            child = child->NextSiblingElement())
         {
-            xml::XMLElement* root = xml_doc.RootElement();
-            std::map<std::string, VARTYPE> props2types;
+            /*Для одного свойства*/
+            std::string p_name = child->FindAttribute("name")->Value();
+            BSTR name = aux_functions::ToBSTRFromString(p_name);
+            auto description = aux_functions::ToBSTRFromString(child->FindAttribute("description")->Value());
+            std::string s_type = child->FindAttribute("type")->Value();
+            VARENUM type = VARENUM::VT_UNKNOWN;
+            if (s_type == "8") type = VARENUM::VT_BSTR;
+            else if (s_type == "5") type = VARENUM::VT_R8;
+            else if (s_type == "3") type = VARENUM::VT_I4;
 
-            /*Регистрация новых свойств*/
-            xml::XMLElement* props_list = root->FirstChildElement(xml_file_properties_info_name);
-            for (xml::XMLElement* child = props_list->FirstChildElement(); child != NULL; 
-                child = child->NextSiblingElement())
+            auto category = aux_functions::ToBSTRFromString(child->FindAttribute("category")->Value());
+
+            std::string data_guid = child->FindAttribute("id")->Value();
+            auto w_data_guid = aux_functions::ToWStringFromString(data_guid);
+            GUID represented_guid;
+            HRESULT hr2 = CLSIDFromString(w_data_guid.c_str(), (LPCLSID)&represented_guid);
+
+            if (hr2 == S_OK)
             {
-                /*Для одного свойства*/
-                std::string p_name = child->FindAttribute("name")->Value();
-                BSTR name = aux_functions::ToBSTRFromString(p_name);
-                auto description = aux_functions::ToBSTRFromString(child->FindAttribute("description")->Value());
-                std::string s_type = child->FindAttribute("type")->Value();
-                VARENUM type = VARENUM::VT_UNKNOWN;
-                if (s_type == "8") type = VARENUM::VT_BSTR;
-                else if (s_type == "5") type = VARENUM::VT_R8;
-                else if (s_type == "3") type = VARENUM::VT_I4;
-                
-                auto category = aux_functions::ToBSTRFromString(child->FindAttribute("category")->Value());
+                std::string current_guid = aux_functions::ToStringFromGuid(represented_guid);
+                auto id = aux_functions::ToBSTRFromString(current_guid);
 
-                std::string data_guid = child->FindAttribute("id")->Value();
-                auto w_data_guid = aux_functions::ToWStringFromString(data_guid);
-                GUID represented_guid;
-                HRESULT hr2 = CLSIDFromString(w_data_guid.c_str(), (LPCLSID)&represented_guid);
-
-                if (hr2 == S_OK)
+                /*classes*/
+                std::string to_classes_data = child->FindAttribute("to_classes")->Value();
+                std::vector<BSTR> classes;
+                if (!to_classes_data.empty())
                 {
-                    std::string current_guid = aux_functions::ToStringFromGuid(represented_guid);
-                    auto id = aux_functions::ToBSTRFromString(current_guid);
-
-                    /*classes*/
-                    std::string to_classes_data = child->FindAttribute("to_classes")->Value();
-                    std::vector<BSTR> classes;
-                    if (!to_classes_data.empty())
-                    {
-                        auto splited_data = aux_functions::StringSplit(to_classes_data, ';');
-                        for (auto i : splited_data) { classes.push_back(aux_functions::ToBSTRFromString(i)); }
-                    }
-                    props2types.insert({ current_guid, type });
-                    CreateSingleDynProperty(name, description, type, category, classes, id);
+                    auto splited_data = aux_functions::StringSplit(to_classes_data, ';');
+                    for (auto i : splited_data) { classes.push_back(aux_functions::ToBSTRFromString(i)); }
                 }
+                props2types.insert({ current_guid, type });
+                CreateSingleDynProperty(name, description, type, category, classes, id);
             }
-            /*assign properties values by reading handle*/
-            xml::XMLElement* props_values_list = root->FirstChildElement(xml_file_properties_values_name);
-            for (xml::XMLElement* child = props_values_list->FirstChildElement(); child != NULL;
-                child = child->NextSiblingElement())
-            {
-                /*Для одного объекта*/
-                std::string s_handle = child->FindAttribute("handle")->Value();
-                auto w_handle = aux_functions::ToWStringFromString(s_handle);
-                AcDbObjectId drawing_object_id = AcDbObjectId::kNull;
-                try
-                {
-
-                    AcDbHandle drawing_handle(w_handle.c_str());
-                    if (pCurDb->getAcDbObjectId(drawing_object_id, false, drawing_handle) == Acad::eOk)
-                    {
-                        drawing_object_id = current_data[s_handle];
-                    }
-                }
-                catch (int err) {}
-
-                if (!drawing_object_id.isNull())
-                {
-                    for (xml::XMLElement* prop_value = child->FirstChildElement(); prop_value != NULL;
-                        prop_value = prop_value->NextSiblingElement())
-                    {
-                        auto attr_value = prop_value->FindAttribute("value");
-                        auto s_value = attr_value->Value();
-
-                        std::string data_guid = prop_value->FindAttribute("id")->Value();
-                        //data_guid = data_guid.replace(data_guid.find("{"), 1, "");
-                        //data_guid = data_guid.replace(data_guid.find("}"), 1, "");
-
-                        auto w_data_guid = aux_functions::ToWStringFromString(data_guid);
-                        GUID represented_guid;
-                        HRESULT hr2 = CLSIDFromString(w_data_guid.c_str(), (LPCLSID) &represented_guid);
-                        if (hr2 == S_OK)
-                        {
-                            std::string current_guid = aux_functions::ToStringFromGuid(represented_guid);
-                            VARTYPE prop_type = props2types[current_guid];
-
-                            VARIANT current_v = _variant_t();
-                            switch (prop_type)
-                            {
-                            case VARENUM::VT_BSTR:
-                            {
-                                auto str_representation = aux_functions::ToBSTRFromString(s_value);
-                                current_v = _variant_t(str_representation);
-                                break;
-                            }
-
-                            case VARENUM::VT_I4:
-                                current_v = _variant_t(atoi(s_value));
-                                break;
-                            case VARENUM::VT_R8:
-                                current_v = _variant_t(atof(s_value), VARENUM::VT_R8);
-                                break;
-                            }
-                            DynPropertiesManager::SetPropertyValue(&drawing_object_id,
-                                &represented_guid, &_variant_t(current_v));
-                        }
-                    }
-                }
-            }
-            int for_breakpoint_1 = 0;
         }
+        /*assign properties values by reading handle*/
+        xml::XMLElement* props_values_list = root->FirstChildElement(xml_file_properties_values_name);
+        for (xml::XMLElement* child = props_values_list->FirstChildElement(); child != NULL;
+            child = child->NextSiblingElement())
+        {
+            /*Для одного объекта*/
+            std::string s_handle = child->FindAttribute("handle")->Value();
+            auto w_handle = aux_functions::ToWStringFromString(s_handle);
+            AcDbObjectId drawing_object_id = AcDbObjectId::kNull;
+            try
+            {
+
+                AcDbHandle drawing_handle(w_handle.c_str());
+                if (pCurDb->getAcDbObjectId(drawing_object_id, false, drawing_handle) == Acad::eOk)
+                {
+                    drawing_object_id = current_data[s_handle];
+                }
+            }
+            catch (int err) {}
+
+            if (!drawing_object_id.isNull())
+            {
+                for (xml::XMLElement* prop_value = child->FirstChildElement(); prop_value != NULL;
+                    prop_value = prop_value->NextSiblingElement())
+                {
+                    auto attr_value = prop_value->FindAttribute("value");
+                    auto s_value = attr_value->Value();
+
+                    std::string data_guid = prop_value->FindAttribute("id")->Value();
+                    //data_guid = data_guid.replace(data_guid.find("{"), 1, "");
+                    //data_guid = data_guid.replace(data_guid.find("}"), 1, "");
+
+                    auto w_data_guid = aux_functions::ToWStringFromString(data_guid);
+                    GUID represented_guid;
+                    HRESULT hr2 = CLSIDFromString(w_data_guid.c_str(), (LPCLSID)&represented_guid);
+                    if (hr2 == S_OK)
+                    {
+                        std::string current_guid = aux_functions::ToStringFromGuid(represented_guid);
+                        VARTYPE prop_type = props2types[current_guid];
+
+                        VARIANT current_v = _variant_t();
+                        switch (prop_type)
+                        {
+                        case VARENUM::VT_BSTR:
+                        {
+                            auto str_representation = aux_functions::ToBSTRFromString(s_value);
+                            current_v = _variant_t(str_representation);
+                            break;
+                        }
+
+                        case VARENUM::VT_I4:
+                            current_v = _variant_t(atoi(s_value));
+                            break;
+                        case VARENUM::VT_R8:
+                            current_v = _variant_t(atof(s_value), VARENUM::VT_R8);
+                            break;
+                        }
+                        DynPropertiesManager::SetPropertyValue(&drawing_object_id,
+                            &represented_guid, &_variant_t(current_v));
+                    }
+                }
+            }
+        }
+        int for_breakpoint_1 = 0;
     }
 }
 //////////////////////////////////////////////////////////////////////////////////////
@@ -246,7 +258,7 @@ void xml_create_property(xml::XMLDocument* doc, xml::XMLElement* prop_list,
     prop_def->SetAttribute("to_classes", j_classes_names.c_str());
     prop_list->InsertEndChild(prop_def);
 }
-void DynPropertiesManager::SavePropertiesAndValueToFile() 
+void DynPropertiesManager::SavePropertiesAndValueToFile()
 {
     xml::XMLDocument doc = new xml::XMLDocument();
     //doc.InsertFirstChild(doc.NewDeclaration());
@@ -307,10 +319,15 @@ void DynPropertiesManager::SavePropertiesAndValueToFile()
 
     /*saving and writing to file*/
     doc.InsertFirstChild(root);
-    auto save_path = aux_functions::GetTempSavePath();
+    auto save_path = Filesystem_worker::GetSavePath();
     //doc.SetBOM(true);
 
     doc.SaveFile(save_path.c_str());
+
+    //run xml_reencoding.exe
+    int result = system("xml_reencoding.exe");
+    //std::wstring rt = L"xml_reencoding.exe";
+    //CreateProcess(rt.c_str(), NULL, NULL, NULL, TRUE, 0, NULL, NULL, &info, &processInfo);
 
     // Need convert to ANSI
     //aux_functions::ConvertFileToAnsiFromUTF8(save_path);

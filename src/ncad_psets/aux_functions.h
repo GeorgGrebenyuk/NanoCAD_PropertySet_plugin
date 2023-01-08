@@ -60,30 +60,7 @@ public:
 		HRESULT hr1 = CoCreateGuid(&guid);
 		return ToStringFromGuid(guid);
 	}
-	static std::string GetTempSavePath() {
-
-		TCHAR username[UNLEN + 1];
-		DWORD size = UNLEN + 1;
-		GetUserName((TCHAR*)username, &size);
-		std::string s_username = aux_functions::ToStringFromWString(username, std::locale("ru_RU.UTF-8"));
-
-		GUID guid3;
-		HRESULT hr1 = CoCreateGuid(&guid3);
-		std::string guid_new_str = aux_functions::ToStringFromGuid(guid3);
-		//std::string guid_new_str1 = std::regex_replace(guid_new_str, regex("{"), "");
-		//std::string guid_new_str2 = std::regex_replace(guid_new_str1, regex("}"), "");
-		guid_new_str = guid_new_str.replace(guid_new_str.find("{") , 1, "");
-		guid_new_str = guid_new_str.replace(guid_new_str.find("}"), 1, "");
-		stringstream ss3;
-		ss3 << "C:\\Users\\" << s_username << "\\AppData\\Local\\psets_folder";
-		if (!fs::is_directory(ss3.str()) || !fs::exists(ss3.str())) 
-		{
-		    fs::create_directory(ss3.str());
-		}
-
-		ss3 << "\\" << guid_new_str << ".xml";
-		return ss3.str();
-	}
+	
 	static std::string ToStringFromWString(const std::wstring& wstr, const std::locale& loc)
 	{
 		if (wstr.empty())

@@ -7,6 +7,9 @@ std::map<AcDbObjectId, std::map<GUID, _variant_t>> DynPropertiesManager::objects
 std::vector<BSTR> DynPropertiesManager::categories_names;
 std::map<std::wstring, std::vector<int>> DynPropertiesManager::document2properties;
 int DynPropertiesManager::dyn_s_props_counter = 0;
+std::string DynPropertiesManager::pDoc_name = "";
+bool DynPropertiesManager::status_eventhandler_work = false;
+
 
 AcRxClass* DynPropertiesManager::m_pClass = AcDbEntity::desc();
 
@@ -187,3 +190,6 @@ void DynPropertiesManager::DeleteAllProperties() {
 
     }
 }
+// Document swapping functions
+//
+

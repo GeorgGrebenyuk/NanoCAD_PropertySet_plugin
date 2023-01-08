@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "DynPropertiesManager.hpp"
+#include "Filesystem_worker.hpp"
+#include "DocumentReactor.hpp"
 
 CComModule _Module;
 
@@ -24,7 +26,8 @@ END_OBJECT_MAP()
 //	return TRUE;    // ok
 //}
 
-
+DocumentReactor* doc_reactor = 0;
+DocumentReactor2* doc_reactor2 = 0;
 const TCHAR* cstrCommandGroup = _T("NCAD_PSETS");
 
 extern "C" __declspec(dllexport) NcRx::AppRetCode
@@ -35,6 +38,7 @@ ncrxEntryPoint(NcRx::AppMsgCode msg, void* pkt)
         //unlock the application
 		acrxDynamicLinker->unlockApplication(pkt);
         acrxDynamicLinker->registerAppMDIAware(pkt);
+        Filesystem_worker::initialize();
         //DynPropertiesManager::CreateSingleDynProperty(L"Свойство №1", L"", 
         //    VARENUM::VT_BSTR, L"Автокатегория", {}, NULL);
         acedRegCmds->addCommand(cstrCommandGroup,
