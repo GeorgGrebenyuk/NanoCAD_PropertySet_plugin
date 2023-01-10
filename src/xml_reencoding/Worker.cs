@@ -23,8 +23,8 @@ namespace xml_reencoding
                 {
                     string new_file_path = Path.Combine(new_dir_path, Path.GetFileName(file));
 
-                    StreamReader sr = new StreamReader(file, Encoding.UTF8);
-                    StreamWriter sw = new StreamWriter(new_file_path, false, Encoding.GetEncoding(1251));
+                    StreamReader sr = new StreamReader(file);
+                    StreamWriter sw = new StreamWriter(new_file_path, false, Encoding.Default);
 
                     // invoke the ReadToEnd method
                     sw.WriteLine(sr.ReadToEnd());
