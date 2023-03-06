@@ -30,8 +30,15 @@ STDMETHODIMP CategorizedSingleDynProperty::IsPropertyEnabled( /*[in]*/LONG_PTR o
         return E_POINTER;
     AcDbObjectId id;
     id.setFromOldId(objectID);
-
-    std::string s_class_name_current = aux_functions::ToStringFromWString(id.objectClass()->name(), std::locale("en_US.UTF-8"));
+    /*ѕровер€ем уместность отображени€ свойства в зависимости от значени€ show_mode*/
+    //if (this->show_mode == 1) 
+    //{
+    //    //ѕроверим, есть ли запись дл€ этого свойства в пам€ти
+    //    *pbEnabled = FALSE;
+    //}
+    //ѕровер€ем уместность отображени€ свойства по разрешенным классам объекта
+    std::string s_class_name_current = aux_functions::ToStringFromWString(id.objectClass()->name(),
+        std::locale("en_US.UTF-8"));
     *pbEnabled = FALSE;
     if (this->p_class_names.empty()) *pbEnabled = TRUE;
     else
@@ -49,7 +56,10 @@ STDMETHODIMP CategorizedSingleDynProperty::IsPropertyEnabled( /*[in]*/LONG_PTR o
             }
         }
     }
+
     /*ѕровер€ем уместность отображени€ свойства в зависимости от принадлежности документу*/
+    //Ёто не так нужно делать по-хорошему
+
     if (*pbEnabled == TRUE)
     {
         *pbEnabled = FALSE;
@@ -65,7 +75,24 @@ STDMETHODIMP CategorizedSingleDynProperty::IsPropertyEnabled( /*[in]*/LONG_PTR o
                     if (DynPropertiesManager::dyn_s_props[prop_id] == this)
                     {
                         //ok
-                        *pbEnabled = TRUE;
+                        if (this->show_mode == 1)
+                        {
+                            //надо проверить, есть ли у свойства значение
+                            id.setFromOldId(objectID);
+                            GUID pr_id;
+                            this->GetGUID(&pr_id);
+                            
+                            _variant_t for_data;
+                            bool is_value_present =
+                                DynPropertiesManager::GetPropertyValue(&id, &pr_id, &for_data);
+                            if (is_value_present)
+                            {
+                                *pbEnabled = TRUE;
+                            }
+                            else *pbEnabled = FALSE;
+                        }
+                        else *pbEnabled = TRUE;
+                        
                         //break;
                     }
                 }
@@ -74,7 +101,6 @@ STDMETHODIMP CategorizedSingleDynProperty::IsPropertyEnabled( /*[in]*/LONG_PTR o
         //if (!is_that_doc) pbEnabled = FALSE;
     }
 
-
     return S_OK;
 }
 STDMETHODIMP CategorizedSingleDynProperty::IsPropertyReadOnly( /*[out]*/BOOL* pbReadonly)
@@ -82,6 +108,7 @@ STDMETHODIMP CategorizedSingleDynProperty::IsPropertyReadOnly( /*[out]*/BOOL* pb
     if (pbReadonly == NULL)
         return E_POINTER;
     *pbReadonly = FALSE;
+    if (this->show_mode == 1) *pbReadonly = TRUE;
     return S_OK;
 }
 STDMETHODIMP CategorizedSingleDynProperty::GetDescription( /*[out]*/BSTR* pBstrName)
@@ -143,8 +170,9 @@ STDMETHODIMP CategorizedSingleDynProperty::GetCurrentValueData( /*in*/LONG_PTR o
             break;
         }
         HRESULT check2 = VariantCopy(pVarData, &_variant_t(current_v));
-        /*ƒл€ свойств впервые также ставим значени€ в пам€ть*/
-        DynPropertiesManager::SetPropertyValue(&id, &pr_id, &_variant_t(current_v));
+        /*ƒл€ свойств впервые также ставим значени€ в пам€ть за исключением свойств только дл€ нужных объектов*/
+        if (this->show_mode == 0) DynPropertiesManager::SetPropertyValue(&id, &pr_id, &_variant_t(current_v));
+        
     }
 
 

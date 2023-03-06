@@ -19,7 +19,8 @@ void DynPropertiesManager::CreateSingleDynProperty(
     /*in*/VARENUM type,
     /*in*/BSTR category_name,
     /*in*/std::vector<BSTR> class_names,
-    /*in*/BSTR id)
+    /*in*/BSTR id,
+    /*in*/int show_mode)
 {
     //category_name = L"Default Category";
     CComPtr<IPropertyManager> prop_manager;
@@ -46,6 +47,7 @@ void DynPropertiesManager::CreateSingleDynProperty(
     new_property->p_valueType = type;
     new_property->p_CatName = category_name;
     new_property->p_class_names = class_names;
+    new_property->show_mode = show_mode;
 
     int cat_index = 1;
     bool is_a = false;
@@ -172,24 +174,46 @@ bool DynPropertiesManager::GetPropertyValue(AcDbObjectId* id,
     }
     return true;
 }
+
 void DynPropertiesManager::DeleteAllProperties() {
     categories_names.clear();
     objects2properties.clear();
+    
+    for (auto document2properties1 : document2properties)
+    {
+        document2properties1.second.clear();
+    }
+    document2properties.clear();
 
     CComPtr<IPropertyManager> prop_manager;
     if ((prop_manager.p = GET_OPMPROPERTY_MANAGER(m_pClass)) == NULL)
         _com_issue_error(E_FAIL);
 
-    for (auto prop : dyn_s_props)
+    if (prop_manager)
     {
-        if (prop)
+        for (auto prop : dyn_s_props)
         {
-            prop_manager->RemoveProperty(prop);
-            prop->Release();
-        }
+            if (prop)
+            {
+                _com_util::CheckError(prop_manager->RemoveProperty(prop));
+                prop->Release();
+                //__try
+                //{
 
+                //    
+                //}
+                //__except (EXCEPTION_CONTINUE_EXECUTION)
+                //{
+
+                //}
+
+            }
+
+        }
     }
+
 }
+
 // Document swapping functions
 //
 

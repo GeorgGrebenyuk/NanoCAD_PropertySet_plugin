@@ -23,20 +23,22 @@ public:
 		ss << get_path_to_temp_folder();
 		std::string t_path_to_temp_folder = ss.str();
 		//check existense of folder "saves" and "_temp"
-		ss.clear();
+		ss.str("");
 		ss << t_path_to_temp_folder << "\\_temp";
-		if (!fs::is_directory(ss.str()))fs::create_directory(ss.str());
-		ss.clear();
+		const char* path_temp = ss.str().c_str();
+		if (!fs::is_directory(path_temp))fs::create_directory(path_temp);
+		ss.str("");
 		ss << t_path_to_temp_folder << "\\saves";
-		if (!fs::is_directory(ss.str()))fs::create_directory(ss.str());
-		ss.clear();
+		const char* path_saves = ss.str().c_str();
+		if (!fs::is_directory(path_saves))fs::create_directory(path_saves);
+		ss.str("");
 	}
 	/*Путь для сохранения файла со свойствами; только во временной папке с последующим
 	 перемещением */
 	static std::string GetSavePath() 
 	{
 		/*Формирует файл в папке _temp как вложенная папка с именем проекта и внутри имя файла как guid*/
-		std::string drawing_path = get_file_path_for_drawing(true);
+		std::string drawing_path = get_file_path_for_drawing(false);
 		stringstream ss;
 		ss << drawing_path;
 		/*Create an unique name for file*/
@@ -131,8 +133,8 @@ private:
 		std::wstring w_pCurDoc_title(doc->docTitle());
 		std::string s_pCurDoc_title = aux_functions::ToStringFromWString(w_pCurDoc_title, ru_loc);
 		stringstream ss;
-		if (is_for_save) ss << get_path_to_temp_folder() << "\\_temp\\" << s_pCurDoc_title;
-		else ss << get_path_to_temp_folder() << "\\saves\\" << s_pCurDoc_title;
+		if (is_for_save) ss << get_path_to_temp_folder() << "\\_temp"; //<< s_pCurDoc_title;
+		else ss << get_path_to_temp_folder() << "\\saves";// << s_pCurDoc_title;
 		
 		/*Create directory for drawing's name*/
 		if (!fs::is_directory(ss.str()))

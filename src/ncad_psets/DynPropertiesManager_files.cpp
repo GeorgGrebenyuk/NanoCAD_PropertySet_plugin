@@ -77,7 +77,8 @@ void DynPropertiesManager::ImportPropertiesByFile() {
                 type,
                 aux_functions::ToBSTRFromString(str_data[3]),
                 classes,
-                aux_functions::ToBSTRFromString(str_data[4]));
+                aux_functions::ToBSTRFromString(str_data[4]),
+                0);
         }
 
 	}
@@ -143,6 +144,8 @@ void DynPropertiesManager::LoadPropertiesAndValuesFromFile()
             else if (s_type == "5") type = VARENUM::VT_R8;
             else if (s_type == "3") type = VARENUM::VT_I4;
 
+            int show_mode = std::atoi(child->FindAttribute("show_mode")->Value());
+
             auto category = aux_functions::ToBSTRFromString(child->FindAttribute("category")->Value());
 
             std::string data_guid = child->FindAttribute("id")->Value();
@@ -164,7 +167,7 @@ void DynPropertiesManager::LoadPropertiesAndValuesFromFile()
                     for (auto i : splited_data) { classes.push_back(aux_functions::ToBSTRFromString(i)); }
                 }
                 props2types.insert({ current_guid, type });
-                CreateSingleDynProperty(name, description, type, category, classes, id);
+                CreateSingleDynProperty(name, description, type, category, classes, id, show_mode);
             }
         }
         /*assign properties values by reading handle*/
@@ -249,7 +252,8 @@ void xml_create_property(xml::XMLDocument* doc, xml::XMLElement* prop_list,
     /*OLECHAR* guidString;
     HRESULT hr = StringFromCLSID(prop->p_guid, &guidString);*/
     prop_def->SetAttribute("id", aux_functions::ToStringFromGuid(prop->p_guid).c_str());
-    
+    prop_def->SetAttribute("show_mode", prop->show_mode);
+
     std::vector<std::string> classes_names;
     for (auto o_class : prop->p_class_names) { classes_names.push_back(aux_functions::ToStringFromBSTR(o_class)); }
     std::string j_classes_names;

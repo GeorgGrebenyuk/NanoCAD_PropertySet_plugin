@@ -39,7 +39,8 @@ public:
 		/*in*/VARENUM type,
 		/*in*/BSTR category_name,
 		/*in*/std::vector<BSTR> class_names,
-		/*in*/BSTR id);
+		/*in*/BSTR id,
+		/*in*/int show_mode);
 	/*Удаление регистрации всех свойств из PropertyManager*/
 	static void RemoveAllProperties();
 	//////////////////////////////////////////////////////////////////////////////////////
