@@ -1044,3 +1044,5 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+/_bin_stable
