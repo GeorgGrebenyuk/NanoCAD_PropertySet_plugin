@@ -55,10 +55,19 @@ public:
 		return s_guid;
 
 	}
-	static std::string NewGuidToWCharString() {
-		GUID guid;
-		HRESULT hr1 = CoCreateGuid(&guid);
-		return ToStringFromGuid(guid);
+	static std::string NewGuidToCharString(bool without_bracets = true) {
+		GUID guid3;
+		HRESULT hr1 = CoCreateGuid(&guid3);
+		std::string guid_new_str = aux_functions::ToStringFromGuid(guid3);
+		if (without_bracets)
+		{
+			guid_new_str = guid_new_str.replace(guid_new_str.find("{"), 1, "");
+			guid_new_str = guid_new_str.replace(guid_new_str.find("}"), 1, "");
+		}
+		return guid_new_str;
+	}
+	static std::wstring NewGuidToWCharString(bool without_bracets = true) {
+		return ToWStringFromString(NewGuidToCharString(without_bracets));
 	}
 	
 	static std::string ToStringFromWString(const std::wstring& wstr, const std::locale& loc)
@@ -224,6 +233,43 @@ public:
 			acutPrintf(L"\nНе удалось открыть  blocktablerecord");
 		}
 		return handle2ids;
+	}
+	/// <summary>
+	/// Получение идентификатора у документа NCAD_PSETS_PARAMETERS в AcDbDatabaseSummaryInfo
+	/// </summary>
+	/// <returns></returns>
+	static std::wstring get_doc_id() {
+		std::wstring need_id;
+		AcDbDatabase* pCurDb = acDocManager->curDocument()->database();
+		AcDbDatabaseSummaryInfo* info;
+		auto es = acdbGetSummaryInfo(pCurDb, info);
+
+		const NCHAR* parameter_name = L"NCAD_PSETS_PARAMETER";//NCAD_PSETS_PARAMETER
+
+		NCHAR* PARAM_DATA;
+		auto check_exist_value = info->getCustomSummaryInfo(parameter_name, PARAM_DATA);
+		//std::wstring temp_data = PARAM_DATA;
+
+		if (check_exist_value != Acad::eOk)
+		{
+			//(check_exist_value == Acad::eOk && wcslen(PARAM_DATA) < 5)
+			//set value
+			auto need_id_temp = aux_functions::NewGuidToWCharString();
+			auto check_set_value = info->addCustomSummaryInfo(parameter_name, need_id_temp.c_str());
+			if (check_set_value == Acad::eOk)
+			{
+				need_id = need_id_temp;
+				acutPrintf(L"Для документа установлен уникальный идентификатор NCAD_PSETS_PARAMETER");
+				acutPrintf(need_id_temp.c_str());
+				acutPrintf(L"\n");
+			}
+		}
+		else {
+			//set to need_id the getted parameter
+			need_id = PARAM_DATA;
+		}
+		es = acdbPutSummaryInfo(info);
+		return need_id;
 	}
 };
 #endif

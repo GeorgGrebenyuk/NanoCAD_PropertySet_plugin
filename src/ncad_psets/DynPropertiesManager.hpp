@@ -82,7 +82,6 @@ public:
 	static void DeleteAllProperties();
 	/*Nandlers of document*/
 	//static AcApDocument* pDoc_pointer;
-	static std::string pDoc_name;
 	static bool status_eventhandler_work;
 
 

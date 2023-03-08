@@ -7,7 +7,6 @@ std::map<AcDbObjectId, std::map<GUID, _variant_t>> DynPropertiesManager::objects
 std::vector<BSTR> DynPropertiesManager::categories_names;
 std::map<std::wstring, std::vector<int>> DynPropertiesManager::document2properties;
 int DynPropertiesManager::dyn_s_props_counter = 0;
-std::string DynPropertiesManager::pDoc_name = "";
 bool DynPropertiesManager::status_eventhandler_work = false;
 
 
@@ -84,16 +83,17 @@ void DynPropertiesManager::CreateSingleDynProperty(
     {
         new_property->AddRef();
         _com_util::CheckError(prop_manager->AddProperty(new_property));
-        
 
         /*Фиксируем размерность списка dyn_s_props (фактически, индекс свойства) и добавляем
         в document2properties*/
-        std::wstring pCurDoc_title(acDocManager->curDocument()->docTitle());
+        auto pCurDoc_id_temp = aux_functions::get_doc_id();
+        //if error status
+
         bool is_find = false;
         for (auto t : document2properties)
         {
-            if (t.first == pCurDoc_title) {
-                document2properties[pCurDoc_title].push_back(dyn_s_props_counter);
+            if (t.first == pCurDoc_id_temp) {
+                document2properties[pCurDoc_id_temp].push_back(dyn_s_props_counter);
                 is_find = true;
             }
         }
@@ -101,7 +101,7 @@ void DynPropertiesManager::CreateSingleDynProperty(
         {
             std::vector<int> new_x;
             new_x.push_back(dyn_s_props_counter);
-            document2properties.insert(std::make_pair(pCurDoc_title, new_x));
+            document2properties.insert(std::make_pair(pCurDoc_id_temp, new_x));
         }
         dyn_s_props_counter++;
         dyn_s_props.push_back(new_property);

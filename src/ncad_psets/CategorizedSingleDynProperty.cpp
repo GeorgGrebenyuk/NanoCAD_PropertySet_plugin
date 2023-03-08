@@ -64,10 +64,11 @@ STDMETHODIMP CategorizedSingleDynProperty::IsPropertyEnabled( /*[in]*/LONG_PTR o
     {
         *pbEnabled = FALSE;
         //bool is_that_doc = false;
-        std::wstring pCurDoc_title(acDocManager->curDocument()->docTitle());
+        auto pCurDoc_id_temp = aux_functions::get_doc_id();
+
         for (auto doc_data : DynPropertiesManager::document2properties)
         {
-            if (doc_data.first == pCurDoc_title)
+            if (doc_data.first == pCurDoc_id_temp)
             {
                 //is_that_doc = true;
                 for (auto prop_id : doc_data.second)

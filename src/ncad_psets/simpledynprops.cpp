@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "DynPropertiesManager.hpp"
-#include "Filesystem_worker.hpp"
+#include "Filesystem_worker.h"
 #include "DocumentReactor.hpp"
 
 CComModule _Module;
@@ -40,7 +40,7 @@ ncrxEntryPoint(NcRx::AppMsgCode msg, void* pkt)
         acrxDynamicLinker->registerAppMDIAware(pkt);
         Filesystem_worker::initialize();
         //DynPropertiesManager::CreateSingleDynProperty(L"Свойство №1", L"", 
-        //    VARENUM::VT_BSTR, L"Автокатегория", {}, NULL);
+        //    VARENUM::VT_BSTR, L"Автокатегория", {}, NULL, 0);
         acedRegCmds->addCommand(cstrCommandGroup,
             _T("_NCAD_PSETS_LoadPropsFromTextFile"),
             _T("NCAD_PSETS_LoadPropsFromTextFile"),

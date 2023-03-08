@@ -59,7 +59,7 @@
     <ClCompile Include="DynPropertiesManager_files.cpp">
       <Filter>Props</Filter>
     </ClCompile>
-    <ClCompile Include="Filesystem_worker.hpp">
+    <ClCompile Include="Filesystem_worker.h">
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="DocumentReactor.cpp">

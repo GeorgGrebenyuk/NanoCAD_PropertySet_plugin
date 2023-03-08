@@ -12,7 +12,7 @@
 namespace xml = tinyxml2;
 
 #include "aux_functions.h"
-#include "Filesystem_worker.hpp"
+#include "Filesystem_worker.h"
 //#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 //#include <experimental/filesystem>
 //namespace fs = std::experimental::filesystem;
@@ -319,20 +319,10 @@ void DynPropertiesManager::SavePropertiesAndValueToFile()
             }
         }
     }
-
-
     /*saving and writing to file*/
     doc.InsertFirstChild(root);
-    auto save_path = Filesystem_worker::GetSavePath();
+    auto save_path1 = Filesystem_worker::GetSavePath();
     //doc.SetBOM(true);
-
-    doc.SaveFile(save_path.c_str());
-
-    //run xml_reencoding.exe
-    int result = system("xml_reencoding.exe");
-    //std::wstring rt = L"xml_reencoding.exe";
-    //CreateProcess(rt.c_str(), NULL, NULL, NULL, TRUE, 0, NULL, NULL, &info, &processInfo);
-
-    // Need convert to ANSI
-    //aux_functions::ConvertFileToAnsiFromUTF8(save_path);
+    doc.SaveFile(save_path1.c_str());
+    Filesystem_worker::encoding_file_convert(save_path1.c_str());
 }
